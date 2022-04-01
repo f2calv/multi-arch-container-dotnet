@@ -85,7 +85,7 @@ jobs:
 
       - name: set vars (2 of 2)
         if: github.ref != 'refs/heads/main' #non-default branch use a more verbose SemVer
-        run: echo "GIT_TAG=${{ steps.gitversion.outputs.FullSemVer }}" >> $GITHUB_ENV
+        run: echo "GIT_TAG=dev" >> $GITHUB_ENV
 
       - name: set vars (pwsh)
         shell: pwsh
