@@ -2,11 +2,11 @@ name: ci
 
 on:
   workflow_dispatch:
-    inputs:
-      BuildConfiguration:
-        description: Build Configuration
-        required: true
-        default: Release
+    # inputs:
+    #   BuildConfiguration:
+    #     description: Build Configuration
+    #     required: true
+    #     default: Release
   push:
     paths-ignore:
       # - .azure-pipelines
