@@ -10,7 +10,7 @@ Key lessons learned;
 
 The .NET 6.0 workload is a simple worker process which outputs a number of environment variables in a loop for debugging.
 
-I'd highly recommend reading the official Docker blog posts.
+I'd highly recommend reading the official Docker blog posts and if you find this repository useful please star it :)
 
 ## Runtime Identifiers
 
