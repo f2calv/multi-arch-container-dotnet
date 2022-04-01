@@ -1,0 +1,11 @@
+mode: MainLine
+branches:
+  main:
+    regex: ^main$
+    tag: ''
+  feature:
+    regex: ^features?[/-]
+    tag: useBranchName
+ignore:
+  sha: []
+merge-message-formats: {}

@@ -1,0 +1,249 @@
+name: ci
+
+on:
+  workflow_dispatch:
+    inputs:
+      BuildConfiguration:
+        description: Build Configuration
+        required: true
+        default: Release
+  push:
+    paths-ignore:
+      # - .azure-pipelines
+      # - .pipelines
+      # - .github
+      # - .scripts
+      # - .charts
+      # - LICENSE
+      - README.md
+
+env:
+  IMAGE_NAME: dotnetmultiarchapp
+
+jobs:
+  build_app:
+    runs-on: ubuntu-latest
+    outputs:
+      SemVer: ${{ steps.gitversion.outputs.SemVer }}
+      FullSemVer: ${{ steps.gitversion.outputs.FullSemVer }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: .NET 6.x SDK
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+
+      - name: gitversion
+        shell: pwsh
+        id: gitversion
+        run: |
+          dotnet tool update -g GitVersion.Tool
+          $GitVersion = dotnet-gitversion ${{ github.workspace }} /nofetch | ConvertFrom-Json
+          echo "SemVer=$($GitVersion.SemVer)"
+          echo "::set-output name=SemVer::$($GitVersion.SemVer)"
+          echo "FullSemVer=$($GitVersion.FullSemVer)"
+          echo "::set-output name=FullSemVer::$($GitVersion.FullSemVer)"
+
+      - name: dotnet restore
+        run: dotnet restore --verbosity minimal --configfile NuGet.config
+        if: false #disable during debug
+
+      - name: dotnet build
+        run: dotnet build -c Release --nologo --no-restore -p:Version='${{ steps.gitversion.outputs.FullSemVer }}' -p:SourceRevisionId=${{ github.sha }}
+        if: false #disable during debug
+
+      #run dotnet test here...
+
+  build_image:
+    runs-on: ubuntu-latest
+    needs: build_app
+
+    #https://github.blog/changelog/2021-04-20-github-actions-control-permissions-for-github_token/
+    #https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+    permissions:
+      packages: write #for pushing container image
+
+    env:
+      REGISTRY: ghcr.io
+      #REPOSITORY: Note: set dynamically, i.e. github.repository_owner+IMAGE_NAME
+      GIT_REPO: ${{ github.repository }}
+      GIT_TAG: ${{ needs.build_app.outputs.SemVer }}
+      GIT_BRANCH: ${{ github.ref }}
+      GIT_COMMIT: ${{ github.sha }}
+
+    steps:
+      - uses: actions/checkout@v2
+        # with:
+        #   fetch-depth: 0
+
+      - name: set vars
+        run: echo "REPOSITORY=${{ github.repository_owner }}/$IMAGE_NAME" >> $GITHUB_ENV
+
+      - name: set vars (pwsh)
+        shell: pwsh
+        run: echo "REPOSITORY=${{ github.repository_owner }}/$IMAGE_NAME" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+        if: false #debug
+
+      - name: github context json
+        run: echo '${{ toJSON(github) }}'
+        if: false #debug
+
+      - name: github context json (pwsh)
+        shell: pwsh
+        run: Write-Host '${{ toJSON(github) }}'
+        if: false #debug
+
+      - name: docker login ${{ env.REGISTRY }}
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login $REGISTRY -u ${{ github.actor }} --password-stdin
+
+      - name: docker build
+        if: false #disabled as we now use 'docker buildx build'
+        run: |
+          docker build \
+            -t $REGISTRY/$REPOSITORY:$GIT_TAG \
+            -f src/$IMAGE_NAME/Dockerfile \
+            --label "GITHUB_RUN_ID=${{ github.run_id }}" \
+            --label "IMAGE_NAME=$IMAGE_NAME" \
+            --build-arg GIT_REPO=$GIT_REPO \
+            --build-arg GIT_TAG=$GIT_TAG \
+            --build-arg GIT_BRANCH=$GIT_BRANCH \
+            --build-arg GIT_COMMIT=$GIT_COMMIT \
+            --build-arg GITHUB_WORKFLOW=${{ github.workflow }} \
+            --build-arg GITHUB_RUN_ID=${{ github.run_id }} \
+            --build-arg GITHUB_RUN_NUMBER=${{ github.run_number }} \
+            --pull \
+            .
+
+      - name: docker build (pwsh)
+        shell: pwsh
+        if: false #disabled as we now use 'docker buildx build'
+        run: |
+          docker build `
+            -t "$($env:REGISTRY)/$($env:REPOSITORY):$($env:GIT_TAG)" `
+            -f "src/$($env:IMAGE_NAME)/Dockerfile" `
+            --label "GITHUB_RUN_ID=${{ github.run_id }}" `
+            --label "IMAGE_NAME=$($env:IMAGE_NAME)" `
+            --build-arg GIT_REPO=$($env:GIT_REPO) `
+            --build-arg GIT_TAG=$($env:GIT_TAG) `
+            --build-arg GIT_BRANCH=$($env:GIT_BRANCH) `
+            --build-arg GIT_COMMIT=$($env:GIT_COMMIT) `
+            --build-arg GITHUB_WORKFLOW=${{ github.workflow }} `
+            --build-arg GITHUB_RUN_ID=${{ github.run_id }} `
+            --build-arg GITHUB_RUN_NUMBER=${{ github.run_number }} `
+            --pull `
+            .
+
+      - name: docker push
+        if: false #disabled as we now use 'docker buildx build'
+        run: docker push $REGISTRY/$REPOSITORY:$GIT_TAG
+
+      - name: docker push latest
+        if: false #disabled as we now use 'docker buildx build'
+        #if: github.ref == 'refs/heads/main'
+        run: |
+          docker tag $REGISTRY/$REPOSITORY:$GIT_TAG $REGISTRY/$REPOSITORY
+          docker push $REGISTRY/$REPOSITORY
+
+      - name: docker buildx build
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker buildx create --name multiarchtest --use
+          docker buildx build \
+            -t $REGISTRY/$REPOSITORY:$GIT_TAG \
+            -t $REGISTRY/$REPOSITORY:latest \
+            -f src/$IMAGE_NAME/Dockerfile.multiarch \
+            --label "GITHUB_RUN_ID=${{ github.run_id }}" \
+            --label "IMAGE_NAME=$IMAGE_NAME" \
+            --build-arg GIT_REPO=$GIT_REPO \
+            --build-arg GIT_TAG=$GIT_TAG \
+            --build-arg GIT_BRANCH=$GIT_BRANCH \
+            --build-arg GIT_COMMIT=$GIT_COMMIT \
+            --build-arg GITHUB_WORKFLOW=${{ github.workflow }} \
+            --build-arg GITHUB_RUN_ID=${{ github.run_id }} \
+            --build-arg GITHUB_RUN_NUMBER=${{ github.run_number }} \
+            --platform linux/amd64,linux/arm64,linux/arm/v7 \
+            --push \
+            --pull \
+            .
+
+  push_chart:
+    runs-on: ubuntu-latest
+    needs: [build_app, build_image]
+
+    permissions:
+      packages: write #for pushing container image
+      contents: write #for creating releases/tags
+
+    env:
+      REGISTRY: ghcr.io
+      #REPOSITORY: Note: set dynamically, i.e. github.repository_owner+IMAGE_NAME
+      GIT_TAG: ${{ needs.build_app.outputs.SemVer }}
+      HELM_EXPERIMENTAL_OCI: 1
+      HELM_VERSION_TO_INSTALL: 3.8.1
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 #Note: shallow clone may break git tag & ct lint...
+
+      - name: set vars
+        run: echo "REPOSITORY=${{ github.repository_owner }}/$IMAGE_NAME" >> $GITHUB_ENV
+
+      - name: install helm
+        uses: azure/setup-helm@v1
+        with:
+          version: ${{ env.HELM_VERSION_TO_INSTALL }}
+
+      - name: helm registry login
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${REGISTRY}/${REPOSITORY} --username ${{ github.repository_owner }} --password-stdin
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+        if: false #not implemented/working yet
+
+      - name: chart-testing (setup)
+        uses: helm/chart-testing-action@v2.2.1
+        if: false #not implemented/working yet
+
+      - name: chart-testing (run list-changed)
+        id: list-changed
+        run: |
+          changed=$(ct list-changed --target-branch main)
+          if [[ -n "$changed" ]]; then
+            echo "::set-output name=changed::true"
+          fi
+        if: false #not implemented/working yet
+
+      - name: chart-testing (run lint)
+        run: ct lint
+        if: false #not implemented/working yet
+
+      - name: create kind cluster
+        uses: helm/kind-action@v1.2.0
+        #if: steps.list-changed.outputs.changed == 'true'
+        if: false #not implemented/working yet
+
+      - name: chart-testing (run install)
+        run: ct install
+        if: false #not implemented/working yet
+
+      - name: helm package
+        run: |
+          helm package ${{ github.workspace }}/charts/$IMAGE_NAME/ --destination ${{ github.workspace }}/artifacts/ --app-version ${{ env.GIT_TAG }}
+
+      - name: helm push
+        run: |
+          helm push ${{ github.workspace }}/artifacts/$IMAGE_NAME-0.1.0.tgz oci://ghcr.io/${{ github.repository_owner }}
+
+      - name: create-release $GIT_TAG
+        uses: softprops/action-gh-release@v1
+        if: github.ref == 'refs/heads/main'
+        with:
+          tag_name: ${{ env.GIT_TAG }}
+          name: Release ${{ needs.build_app.outputs.FullSemVer }}
