@@ -101,7 +101,7 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login $REGISTRY -u ${{ github.actor }} --password-stdin
 
       - name: docker build
-        if: false #disabled as we now use 'docker buildx build'
+        if: github.ref != 'refs/heads/main'
         run: |
           docker build \
             -t $REGISTRY/$REPOSITORY:$GIT_TAG \
@@ -138,12 +138,11 @@ jobs:
             .
 
       - name: docker push
-        if: false #disabled as we now use 'docker buildx build'
+        if: github.ref != 'refs/heads/main'
         run: docker push $REGISTRY/$REPOSITORY:$GIT_TAG
 
       - name: docker push latest
-        if: false #disabled as we now use 'docker buildx build'
-        #if: github.ref == 'refs/heads/main'
+        if: github.ref != 'refs/heads/main'
         run: |
           docker tag $REGISTRY/$REPOSITORY:$GIT_TAG $REGISTRY/$REPOSITORY
           docker push $REGISTRY/$REPOSITORY
@@ -173,6 +172,7 @@ jobs:
   push_chart:
     runs-on: ubuntu-latest
     needs: [build_app, build_image]
+    if: github.ref == 'refs/heads/main'
 
     permissions:
       packages: write #for pushing container image
