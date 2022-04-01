@@ -10,7 +10,7 @@ Key lessons learned;
 
 The .NET 6.0 workload is a simple worker process which outputs a number of environment variables in a loop for debugging.
 
-I'd highly recommend reading the official Docker blog posts.
+I'd highly recommend reading the official Docker blog posts and if you find this repository useful please star it :)
 
 ## Runtime Identifiers
 
@@ -26,8 +26,19 @@ RID is short for [Runtime Identifier](https://docs.microsoft.com/en-us/dotnet/co
 Clone the repo and execute the following from the root of the repository;
 
 ```pwsh
+#build the multi-arch image with Docker Desktop;
 docker buildx create --name multiarchtest --use
 docker buildx build -t dotnetmultiarchapp:dev -f src/dotnetmultiarchapp/Dockerfile.multiarch --platform linux/amd64,linux/arm64,linux/arm/v7 --pull .
+
+#run a pre-built multi-arch image on your local Docker Desktop installation (this will use the AMD64 image);
+docker run --rm -it --name dotnetmultiarchapp ghcr.io/f2calv/dotnetmultiarchapp
+
+#run a pre-built multi-arch image on a Kubernetes cluster (this will use the AMD64 or ARM64 or ARM32 image depending on your cluster);
+kubectl create deployment --image=ghcr.io/f2calv/dotnetmultiarchapp dotnetmultiarchapp
+#watch for successful pod creation
+kubectl get po -w
+#attach to view the pod logs
+kubectl logs -f dotnetmultiarchapp-????? #<---enter the full pod name here
 ```
 
 For local execution there are two PowerShell scripts you can play with, which will push the images to your own Docker Hub account;
