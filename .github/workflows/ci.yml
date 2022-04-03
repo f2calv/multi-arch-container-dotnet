@@ -245,7 +245,7 @@ jobs:
         run: |
           helm push ${{ github.workspace }}/artifacts/$IMAGE_NAME-0.1.0.tgz oci://ghcr.io/${{ github.repository_owner }}
 
-      - name: create-release $GIT_TAG
+      - name: create release $GIT_TAG
         uses: softprops/action-gh-release@v1
         if: github.ref == 'refs/heads/main'
         with:
