@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
     # inputs:
     #   BuildConfiguration:
+    #     type: string
     #     description: Build Configuration
     #     required: true
     #     default: Release
