@@ -1,6 +1,6 @@
 # .NET Multi-Architecture Container
 
-The back story here is that I started playing around with a Kubernetes cluster running on my Raspberry Pi 4. I wished to deploy a workload running [.NET 6.0](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) and it turned out I had skill-up on building/deploying containers on CPU architectures other than AMD64 so I've built a demo repository to document the process in code along with related resource links.
+The back story here is that I started playing around with a Kubernetes cluster running on my Raspberry Pi 4. I wished to deploy a workload running [.NET 7.0](https://dotnet.microsoft.com/en-us/download/dotnet/7.0) and it turned out I had skill-up on building/deploying containers on CPU architectures other than AMD64 so I've built a demo repository to document the process in code along with related resource links.
 
 Key lessons learned;
 
@@ -8,7 +8,7 @@ Key lessons learned;
 - Using GitHub container registry for container images+helm charts.
 - GitHub actions workflow for container image+chart construction/publishing.
 
-The .NET 6.0 workload is a simple worker process which outputs a number of environment variables in a loop for debugging.
+The .NET 7.0 workload is a simple worker process which outputs a number of environment variables in a loop for debugging.
 
 I'd highly recommend reading the official Docker blog posts and if you find this repository useful please star it :)
 
@@ -72,4 +72,4 @@ $DOCKERHUB_USERNAME = "????" #<------------ populate this variable
   - https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-build
   - https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
   - https://docs.microsoft.com/en-us/azure/container-registry/push-multi-architecture-images
-  - https://dotnet.microsoft.com/en-us/download/dotnet/6.0
+  - https://dotnet.microsoft.com/en-us/download/dotnet/7.0

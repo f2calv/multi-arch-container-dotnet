@@ -28,14 +28,14 @@ jobs:
       FullSemVer: ${{ steps.gitversion.outputs.FullSemVer }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: .NET 6.x SDK
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 7.0.x
 
       - name: gitversion
         shell: pwsh
@@ -76,7 +76,7 @@ jobs:
       GIT_COMMIT: ${{ github.sha }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         # with:
         #   fetch-depth: 0
 
@@ -190,7 +190,7 @@ jobs:
       HELM_VERSION_TO_INSTALL: 3.8.1
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0 #Note: shallow clone may break git tag & ct lint...
 
@@ -198,7 +198,7 @@ jobs:
         run: echo "REPOSITORY=${{ github.repository_owner }}/$IMAGE_NAME" >> $GITHUB_ENV
 
       - name: install helm
-        uses: azure/setup-helm@v1
+        uses: azure/setup-helm@v3
         with:
           version: ${{ env.HELM_VERSION_TO_INSTALL }}
 
