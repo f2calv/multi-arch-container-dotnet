@@ -1,4 +1,4 @@
-# .NET Multi-Architecture Container
+# Multi-Architecture Container Image for a .NET 7.0 app
 
 The back story here is that I started playing around with a Kubernetes cluster running on my Raspberry Pi 4. I wished to deploy a workload running [.NET 7.0](https://dotnet.microsoft.com/en-us/download/dotnet/7.0) and it turned out I had skill-up on building/deploying containers on CPU architectures other than AMD64 so I've built a demo repository to document the process in code along with related resource links.
 
