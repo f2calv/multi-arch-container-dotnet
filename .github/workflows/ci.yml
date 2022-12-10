@@ -2,21 +2,18 @@ name: ci
 
 on:
   workflow_dispatch:
-    # inputs:
-    #   BuildConfiguration:
-    #     type: string
-    #     description: Build Configuration
-    #     required: true
-    #     default: Release
   push:
+    branches-ignore:
+      - "preview/**"
     paths-ignore:
-      # - .azure-pipelines
-      # - .pipelines
       # - .github
       # - .scripts
       # - .charts
-      # - LICENSE
+      - LICENSE
       - README.md
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
 
 env:
   IMAGE_NAME: dotnetmultiarchapp
