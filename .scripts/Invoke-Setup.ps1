@@ -8,7 +8,7 @@ $ErrorActionPreference = "Stop"
 
 & "docker" login
 
-$IMAGE_NAME = "dotnetmultiarchapp"
+$IMAGE_NAME = "multi-arch-container-dotnet"
 $REPOSITORY = "$DOCKERHUB_USERNAME/$IMAGE_NAME"
 $REPO_ROOT = git rev-parse --show-toplevel
 $GIT_REPO = $REPO_ROOT | Split-Path -Leaf

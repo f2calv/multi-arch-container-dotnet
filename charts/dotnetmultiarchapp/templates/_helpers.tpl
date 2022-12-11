@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "dotnetmultiarchapp.name" -}}
+{{- define "multi-arch-container-dotnet.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "dotnetmultiarchapp.fullname" -}}
+{{- define "multi-arch-container-dotnet.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "dotnetmultiarchapp.chart" -}}
+{{- define "multi-arch-container-dotnet.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "dotnetmultiarchapp.labels" -}}
-helm.sh/chart: {{ include "dotnetmultiarchapp.chart" . }}
-{{ include "dotnetmultiarchapp.selectorLabels" . }}
+{{- define "multi-arch-container-dotnet.labels" -}}
+helm.sh/chart: {{ include "multi-arch-container-dotnet.chart" . }}
+{{ include "multi-arch-container-dotnet.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "dotnetmultiarchapp.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "dotnetmultiarchapp.name" . }}
+{{- define "multi-arch-container-dotnet.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "multi-arch-container-dotnet.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "dotnetmultiarchapp.serviceAccountName" -}}
+{{- define "multi-arch-container-dotnet.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "dotnetmultiarchapp.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "multi-arch-container-dotnet.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

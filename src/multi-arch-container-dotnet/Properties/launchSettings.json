@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "dotnetmultiarchapp": {
+    "multi-arch-container-dotnet": {
       "commandName": "Project"
     }
   }

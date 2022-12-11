@@ -16,7 +16,7 @@ on:
     types: [opened, synchronize, reopened]
 
 env:
-  IMAGE_NAME: dotnetmultiarchapp
+  IMAGE_NAME: multi-arch-container-dotnet
 
 jobs:
   build_app:

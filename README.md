@@ -38,17 +38,17 @@ Clone the repository and execute the following from the root of the repository;
 ```pwsh
 #build the multi-arch image with Docker Desktop;
 docker buildx create --name multiarchtest --use
-docker buildx build -t dotnetmultiarchapp:dev -f Dockerfile.multiarch --platform linux/amd64,linux/arm64,linux/arm/v7 --pull .
+docker buildx build -t multi-arch-container-dotnet:dev -f Dockerfile.multiarch --platform linux/amd64,linux/arm64,linux/arm/v7 --pull .
 
 #run a pre-built multi-arch image on your local Docker Desktop installation (this will use the AMD64 image);
-docker run --rm -it --name dotnetmultiarchapp ghcr.io/f2calv/dotnetmultiarchapp
+docker run --rm -it --name multi-arch-container-dotnet ghcr.io/f2calv/multi-arch-container-dotnet
 
 #run a pre-built multi-arch image on a Kubernetes cluster (this will use the AMD64 or ARM64 or ARM32 image depending on your cluster);
-kubectl create deployment --image=ghcr.io/f2calv/dotnetmultiarchapp dotnetmultiarchapp
+kubectl create deployment --image=ghcr.io/f2calv/multi-arch-container-dotnet multi-arch-container-dotnet
 #watch for successful pod creation
 kubectl get po -w
 #attach to view the pod logs
-kubectl logs -f dotnetmultiarchapp-????? #<---enter the full pod name here
+kubectl logs -f multi-arch-container-dotnet-????? #<---enter the full pod name here
 ```
 
 For local execution there are two PowerShell scripts you can play with, which will push the images to your own Docker Hub account;
@@ -57,10 +57,10 @@ For local execution there are two PowerShell scripts you can play with, which wi
 $DOCKERHUB_USERNAME = "????" #<------------ populate this variable
 
 #build/push/run a single architecture image using a 'vanilla' Dockerfile.
-./docker-dotnetmultiarchapp-singlearch.ps1
+./docker-multi-arch-container-dotnet-singlearch.ps1
 
 #multi-build/multi-push/run a multi-architecture image, using a customised Dockerfile.
-./docker-dotnetmultiarchapp-multiarch.ps1
+./docker-multi-arch-container-dotnet-multiarch.ps1
 ```
 
 ## Docker, Container & .NET Resources
