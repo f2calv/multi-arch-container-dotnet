@@ -6,4 +6,4 @@
 !**/*.sln
 !NuGet.config
 !global.json
-!Directory.build.prosps
+!Directory.build.props
