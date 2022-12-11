@@ -48,13 +48,11 @@ jobs:
 
       - name: dotnet restore
         run: dotnet restore --verbosity minimal --configfile NuGet.config
-        if: false #disable during debug
 
       - name: dotnet build
         run: dotnet build -c Release --nologo --no-restore -p:Version='${{ steps.gitversion.outputs.FullSemVer }}' -p:SourceRevisionId=${{ github.sha }}
-        if: false #disable during debug
 
-      #TODO: run dotnet test here...
+      #TODO: could run dotnet test here, etc...
 
   build_image:
     runs-on: ubuntu-latest
@@ -82,28 +80,15 @@ jobs:
         run: echo "REPOSITORY=${{ github.repository_owner }}/$IMAGE_NAME" >> $GITHUB_ENV
 
       - name: set vars (2 of 2)
-        if: github.ref != 'refs/heads/main' #non-default branch use a more verbose SemVer
+        if: github.ref != 'refs/heads/main' #non-default branch use a simplistic SemVer
         run: echo "GIT_TAG=dev" >> $GITHUB_ENV
-
-      - name: set vars (pwsh)
-        shell: pwsh
-        run: echo "REPOSITORY=${{ github.repository_owner }}/$IMAGE_NAME" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
-        if: false #debug
-
-      - name: github context json
-        run: echo '${{ toJSON(github) }}'
-        if: false #debug
-
-      - name: github context json (pwsh)
-        shell: pwsh
-        run: Write-Host '${{ toJSON(github) }}'
-        if: false #debug
 
       - name: docker login ${{ env.REGISTRY }}
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login $REGISTRY -u ${{ github.actor }} --password-stdin
 
       - name: docker build
-        if: github.ref != 'refs/heads/main'
+        #if: github.ref != 'refs/heads/main'
+        if: false #disabled as we now use 'docker buildx build'
         run: |
           docker build \
             -t $REGISTRY/$REPOSITORY:$GIT_TAG \
@@ -117,38 +102,18 @@ jobs:
             --build-arg GITHUB_RUN_ID=${{ github.run_id }} \
             --build-arg GITHUB_RUN_NUMBER=${{ github.run_number }} \
             --pull \
-            .
-
-      - name: docker build (pwsh)
-        shell: pwsh
-        if: false #disabled as we now use 'docker buildx build'
-        run: |
-          docker build `
-            -t "$($env:REGISTRY)/$($env:REPOSITORY):$($env:GIT_TAG)" `
-            --label "GITHUB_RUN_ID=${{ github.run_id }}" `
-            --label "IMAGE_NAME=$($env:IMAGE_NAME)" `
-            --build-arg GIT_REPO=$($env:GIT_REPO) `
-            --build-arg GIT_TAG=$($env:GIT_TAG) `
-            --build-arg GIT_BRANCH=$($env:GIT_BRANCH) `
-            --build-arg GIT_COMMIT=$($env:GIT_COMMIT) `
-            --build-arg GITHUB_WORKFLOW=${{ github.workflow }} `
-            --build-arg GITHUB_RUN_ID=${{ github.run_id }} `
-            --build-arg GITHUB_RUN_NUMBER=${{ github.run_number }} `
-            --pull `
+            --push \
             .
 
       - name: docker push
-        if: github.ref != 'refs/heads/main'
-        run: docker push $REGISTRY/$REPOSITORY:$GIT_TAG
-
-      - name: docker push latest
-        if: github.ref != 'refs/heads/main'
+        #if: github.ref != 'refs/heads/main'
+        if: false #disabled as we now use 'docker buildx build'
         run: |
-          docker tag $REGISTRY/$REPOSITORY:$GIT_TAG $REGISTRY/$REPOSITORY
+          docker push $REGISTRY/$REPOSITORY:$GIT_TAG
           docker push $REGISTRY/$REPOSITORY
-
+           
       - name: docker buildx build
-        if: github.ref == 'refs/heads/main'
+        #if: github.ref == 'refs/heads/main'
         run: |
           docker buildx create --name multiarchtest --use
           docker buildx build \

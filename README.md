@@ -35,7 +35,7 @@ The .NET workload is an ultra simple worker process (i.e. a console application)
 
 Clone the repository and execute the following from the root of the repository;
 
-```pwsh
+```powershell
 #build the multi-arch image with Docker Desktop;
 docker buildx create --name multiarchtest --use
 docker buildx build -t multi-arch-container-dotnet:dev -f Dockerfile.multiarch --platform linux/amd64,linux/arm64,linux/arm/v7 --pull .
@@ -53,7 +53,7 @@ kubectl logs -f multi-arch-container-dotnet-????? #<---enter the full pod name h
 
 For local execution there are two PowerShell scripts you can play with, which will push the images to your own Docker Hub account;
 
-```pwsh
+```powershell
 $DOCKERHUB_USERNAME = "????" #<------------ populate this variable
 
 #build/push/run a single architecture image using a 'vanilla' Dockerfile.

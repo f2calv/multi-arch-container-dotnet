@@ -2,7 +2,9 @@
 
 docker buildx create --name multiarchtestdotnet --use
 
-& "docker" buildx build -t "$($REPOSITORY):$($GIT_TAG)" `
+& "docker" buildx build `
+    -t "$($REPOSITORY):$($GIT_TAG)" `
+    -t "$($REPOSITORY):latest" `
     -f Dockerfile.multiarch `
     --label "GITHUB_RUN_ID=${GITHUB_RUN_ID}" `
     --label "IMAGE_NAME=$IMAGE_NAME" `
