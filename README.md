@@ -38,19 +38,21 @@ Clone the repository (ideally open it as devcontainer) and execute the following
 ```powershell
 #build the multi-arch image locally with Docker Desktop;
 docker buildx create --name multiarchtest --use
-docker buildx build -t multi-arch-container-dotnet:dev -f Dockerfile.multiarch --platform linux/arm/v7 --pull -o . .
+docker buildx build -t multi-arch-container-dotnet:dev -f Dockerfile.multiarch --platform linux/arm/v7 --pull -o type=docker .
+#check the image exists locally
+docker images multi-arch-container-dotnet:dev
 #run the multi-arch image on your local Docker Desktop installation (this will use the AMD64 image, assuming you built on an AMD64 CPU architecture!);
 docker run --rm -it --name multi-arch-container-dotnet multi-arch-container-dotnet:dev
 
 #run a pre-built multi-arch image on a Kubernetes cluster (this will use the AMD64, ARM64 or ARM32 image depending on your cluster CPU architecture);
-kubectl create deployment --image=ghcr.io/f2calv/multi-arch-container-dotnet multi-arch-container-dotnet
+kubectl run -i --tty --attach multi-arch-container-dotnet --image=ghcr.io/f2calv/multi-arch-container-dotnet --image-pull-policy='Always'
 #watch for successful pod creation
 kubectl get po -w
 #attach to view the pod logs
-kubectl logs -f multi-arch-container-dotnet-????? #<---enter the full pod name here
+kubectl logs -f multi-arch-container-dotnet
 ```
 
-For local execution there are two PowerShell scripts you can play with, which will push the images to your own Docker Hub account;
+For local execution there are two PowerShell scripts you can try, which will build and push the images to your own Docker Hub account;
 
 ```powershell
 $DOCKERHUB_USERNAME = "????" #<------------ populate this variable
@@ -58,7 +60,7 @@ $DOCKERHUB_USERNAME = "????" #<------------ populate this variable
 #build/push/run a single architecture image using a 'vanilla' Dockerfile.
 ./docker-build.ps1
 
-#multi-build/multi-push/run a multi-architecture image, using a customised Dockerfile.
+#multi-build/multi-push/run a multi-architecture image, using a heavily customised Dockerfile.
 ./docker-build-multiarch.ps1
 ```
 
