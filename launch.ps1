@@ -1,4 +1,7 @@
-#set env variables during debugging
+Set-StrictMode -Version 3.0
+$ErrorActionPreference = "Stop"
+
+#set variables to emulate running in the workflow/pipeline
 $REPO_ROOT = git rev-parse --show-toplevel
 $GIT_REPO = $REPO_ROOT | Split-Path -Leaf
 $GIT_TAG = "dev"
@@ -7,6 +10,7 @@ $GIT_COMMIT = $(git rev-parse HEAD)
 $GITHUB_WORKFLOW = "n/a"
 $GITHUB_RUN_ID = 0
 $GITHUB_RUN_NUMBER = 0
+$IMAGE_NAME = "$($GIT_REPO):$($GIT_TAG)"
 
 #Create a new builder instance
 #https://github.com/docker/buildx/blob/master/docs/reference/buildx_create.md
@@ -15,7 +19,7 @@ docker buildx create --name multiarchcontainerdotnet --use
 #Start a build
 #https://github.com/docker/buildx/blob/master/docs/reference/buildx_build.md
 docker buildx build `
-    -t "$GIT_REPO:$GIT_TAG" `
+    -t $IMAGE_NAME `
     --build-arg GIT_REPO=$GIT_REPO `
     --build-arg GIT_TAG=$GIT_TAG `
     --build-arg GIT_BRANCH=$GIT_BRANCH `
@@ -32,9 +36,9 @@ docker buildx build `
 #https://docs.docker.com/engine/reference/commandline/images/
 docker images $GIT_REPO
 
-Write-Host "Hit any key to run the image..." 
+Write-Host "Hit any key to run the '$IMAGE_NAME' image..." 
 pause
 
 #Run the multi-architecture container image
 #https://docs.docker.com/engine/reference/commandline/run/
-docker run --rm -it --name $GIT_REPO $GIT_REPO:$GIT_TAG
+docker run --rm -it --name $GIT_REPO $IMAGE_NAME

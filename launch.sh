@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#set env variables during debugging
+#set variables to emulate running in the workflow/pipeline
 GIT_REPO=$(basename `git rev-parse --show-toplevel`)
 GIT_BRANCH=$(git branch --show-current)
 GIT_COMMIT=$(git rev-parse HEAD)
