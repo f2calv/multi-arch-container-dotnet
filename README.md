@@ -1,16 +1,24 @@
-# Multi-Architecture Container Image for a .NET 7.0 app
+# Multi-Architecture Container Image w/.NET
 
-The back story here is that I started playing around with a Kubernetes cluster running on my Raspberry Pi 4. I wished to deploy a workload running [.NET 7.0](https://dotnet.microsoft.com/en-us/download/dotnet/7.0) and it turned out I had skill-up on building/deploying containers on CPU architectures other than AMD64 so I've built a demo repository to document the process in code along with related resource links.
+## Introduction
 
-Key lessons learned;
+I've been developing a service orientated smart home system which consists of a number of separate containerised workloads all running on an edge Kubernetes cluster (via [Microk8s](https://github.com/canonical/microk8s)), the "cluster" itself is a sole Raspberry Pi 4 (ARMv8).
 
-- .NET multi-architecture container image builds using the `docker buildx` command.
-- Using GitHub container registry for container images+helm charts.
-- GitHub actions workflow for container image+chart construction/publishing.
+As well as running multiple workloads on the Pi 4 in addition I sometimes run single workloads on another Raspberry Pi 2b (ARMv7) - a very old Pi but very power efficient. And finally I need to run general tests of the workloads on my local Windows development machine prior to deployment to "Production".
 
-The .NET 7.0 workload is a simple worker process which outputs a number of environment variables in a loop for debugging.
+Although I could acheive my goal of deploying the same application to multiple architectures using seperate Dockerfiles (i.e. Dockerfile.amd64, Dockerfile.arm64, etc...) in my view that is messy and makes the CI/CD overly complex.
 
-I'd highly recommend reading the official Docker blog posts and if you find this repository useful please star it :)
+This repository contains my learnings and provides a fully working example of building a .NET application container image that is capable of targetting multiple platform architectures - all from a single Dockerfile.
+
+If you find this repository of use then please give it a thumbs-up by giving this repository a :star: ... :wink:
+
+## Goals
+
+- Construct a .NET multi-architecture container image via a single Dockerfile using the `docker buildx` command.
+- Create GitHub Actions workflow to;
+
+  - Push finished multi-architecture container images to GitHub packages.
+  - Push packaged Helm chart to GitHub packages
 
 ## Runtime Identifiers
 
@@ -23,7 +31,9 @@ RID is short for [Runtime Identifier](https://docs.microsoft.com/en-us/dotnet/co
 
 ## Demo
 
-Clone the repo and execute the following from the root of the repository;
+The .NET workload is an ultra simple worker process (i.e. a console application) which outputs a number of environment variables in a loop for debugging.
+
+Clone the repository and execute the following from the root of the repository;
 
 ```pwsh
 #build the multi-arch image with Docker Desktop;
@@ -55,7 +65,7 @@ $DOCKERHUB_USERNAME = "????" #<------------ populate this variable
 
 ## Docker, Container & .NET Resources
 
-- Official Docker blog posts about multi-arch images;
+- I highly recommend reading the official Docker blog posts about multi-arch images;
 
   - https://www.docker.com/blog/multi-arch-images/
   - https://www.docker.com/blog/multi-arch-build-and-images-the-simple-way/
