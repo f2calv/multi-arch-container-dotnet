@@ -36,18 +36,18 @@ The .NET workload is an ultra simple worker process (i.e. a console application)
 First clone the repository (ideally by opening it as [vscode devcontainer](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)) and then from the root of the repository execute either;
 
   ```powershell
-  #PowerShell demo script
+  #demo script PowerShell version
   ./launch.ps1
   ```
   
   Or
   
   ```bash
-  #Shell demo script (see below)
+  #demo script Shell version (also below)
   . launch.sh
   ```
 
-### Demo Script
+### Shell Demo Script
 ```shell
 #!/bin/sh
 
@@ -96,16 +96,6 @@ read -p "Hit ENTER to run the '$IMAGE_NAME' image..."
 #Run the multi-architecture container image
 #https://docs.docker.com/engine/reference/commandline/run/
 docker run --rm -it --name $GIT_REPO $IMAGE_NAME
-```
-
-For local execution there are two PowerShell scripts you can try, which will build and push the images to your own Docker Hub account;
-
-```bash
-#build/push/run a single architecture image using a 'vanilla' Dockerfile.
-. docker-build.sh
-
-#multi-build/multi-push/run a multi-architecture image, using a heavily customised Dockerfile.
-. docker-build-multiarch.sh
 ```
 
 ## Docker, Container & .NET Resources
