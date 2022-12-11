@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.31903.286
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnetmultiarchapp", "src\dotnetmultiarchapp\dotnetmultiarchapp.csproj", "{36BF1D3C-A674-4556-A4C9-4378BD04CB2F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "multi-arch-container-dotnet", "src\multi-arch-container-dotnet\multi-arch-container-dotnet.csproj", "{36BF1D3C-A674-4556-A4C9-4378BD04CB2F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

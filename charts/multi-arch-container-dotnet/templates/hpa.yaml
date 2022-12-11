@@ -2,14 +2,14 @@
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "dotnetmultiarchapp.fullname" . }}
+  name: {{ include "multi-arch-container-dotnet.fullname" . }}
   labels:
-    {{- include "dotnetmultiarchapp.labels" . | nindent 4 }}
+    {{- include "multi-arch-container-dotnet.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "dotnetmultiarchapp.fullname" . }}
+    name: {{ include "multi-arch-container-dotnet.fullname" . }}
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   metrics:

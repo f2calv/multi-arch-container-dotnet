@@ -2,23 +2,21 @@ name: ci
 
 on:
   workflow_dispatch:
-    # inputs:
-    #   BuildConfiguration:
-    #     description: Build Configuration
-    #     required: true
-    #     default: Release
   push:
+    branches-ignore:
+      - "preview/**"
     paths-ignore:
-      # - .azure-pipelines
-      # - .pipelines
       # - .github
       # - .scripts
       # - .charts
-      # - LICENSE
+      - LICENSE
       - README.md
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
 
 env:
-  IMAGE_NAME: dotnetmultiarchapp
+  IMAGE_NAME: multi-arch-container-dotnet
 
 jobs:
   build_app:
@@ -28,14 +26,14 @@ jobs:
       FullSemVer: ${{ steps.gitversion.outputs.FullSemVer }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: .NET 6.x SDK
-        uses: actions/setup-dotnet@v1
+      - name: .NET 7.x SDK
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 7.0.x
 
       - name: gitversion
         shell: pwsh
@@ -43,20 +41,18 @@ jobs:
         run: |
           dotnet tool update -g GitVersion.Tool
           $GitVersion = dotnet-gitversion ${{ github.workspace }} /nofetch | ConvertFrom-Json
-          echo "SemVer=$($GitVersion.SemVer)"
-          echo "::set-output name=SemVer::$($GitVersion.SemVer)"
-          echo "FullSemVer=$($GitVersion.FullSemVer)"
-          echo "::set-output name=FullSemVer::$($GitVersion.FullSemVer)"
+          Write-Host "SemVer=$($GitVersion.SemVer)"
+          echo "SemVer=$($GitVersion.SemVer)" >> $env:GITHUB_OUTPUT
+          Write-Host "FullSemVer=$($GitVersion.FullSemVer)"
+          echo "FullSemVer=$($GitVersion.FullSemVer)" >> $env:GITHUB_OUTPUT
 
       - name: dotnet restore
         run: dotnet restore --verbosity minimal --configfile NuGet.config
-        if: false #disable during debug
 
       - name: dotnet build
         run: dotnet build -c Release --nologo --no-restore -p:Version='${{ steps.gitversion.outputs.FullSemVer }}' -p:SourceRevisionId=${{ github.sha }}
-        if: false #disable during debug
 
-      #run dotnet test here...
+      #TODO: could run dotnet test here, etc...
 
   build_image:
     runs-on: ubuntu-latest
@@ -76,7 +72,7 @@ jobs:
       GIT_COMMIT: ${{ github.sha }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         # with:
         #   fetch-depth: 0
 
@@ -84,32 +80,18 @@ jobs:
         run: echo "REPOSITORY=${{ github.repository_owner }}/$IMAGE_NAME" >> $GITHUB_ENV
 
       - name: set vars (2 of 2)
-        if: github.ref != 'refs/heads/main' #non-default branch use a more verbose SemVer
+        if: github.ref != 'refs/heads/main' #non-default branch use a simplistic SemVer
         run: echo "GIT_TAG=dev" >> $GITHUB_ENV
-
-      - name: set vars (pwsh)
-        shell: pwsh
-        run: echo "REPOSITORY=${{ github.repository_owner }}/$IMAGE_NAME" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
-        if: false #debug
-
-      - name: github context json
-        run: echo '${{ toJSON(github) }}'
-        if: false #debug
-
-      - name: github context json (pwsh)
-        shell: pwsh
-        run: Write-Host '${{ toJSON(github) }}'
-        if: false #debug
 
       - name: docker login ${{ env.REGISTRY }}
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login $REGISTRY -u ${{ github.actor }} --password-stdin
 
       - name: docker build
-        if: github.ref != 'refs/heads/main'
+        #if: github.ref != 'refs/heads/main'
+        if: false #disabled as we now use 'docker buildx build'
         run: |
           docker build \
             -t $REGISTRY/$REPOSITORY:$GIT_TAG \
-            -f src/$IMAGE_NAME/Dockerfile \
             --label "GITHUB_RUN_ID=${{ github.run_id }}" \
             --label "IMAGE_NAME=$IMAGE_NAME" \
             --build-arg GIT_REPO=$GIT_REPO \
@@ -120,45 +102,23 @@ jobs:
             --build-arg GITHUB_RUN_ID=${{ github.run_id }} \
             --build-arg GITHUB_RUN_NUMBER=${{ github.run_number }} \
             --pull \
-            .
-
-      - name: docker build (pwsh)
-        shell: pwsh
-        if: false #disabled as we now use 'docker buildx build'
-        run: |
-          docker build `
-            -t "$($env:REGISTRY)/$($env:REPOSITORY):$($env:GIT_TAG)" `
-            -f "src/$($env:IMAGE_NAME)/Dockerfile" `
-            --label "GITHUB_RUN_ID=${{ github.run_id }}" `
-            --label "IMAGE_NAME=$($env:IMAGE_NAME)" `
-            --build-arg GIT_REPO=$($env:GIT_REPO) `
-            --build-arg GIT_TAG=$($env:GIT_TAG) `
-            --build-arg GIT_BRANCH=$($env:GIT_BRANCH) `
-            --build-arg GIT_COMMIT=$($env:GIT_COMMIT) `
-            --build-arg GITHUB_WORKFLOW=${{ github.workflow }} `
-            --build-arg GITHUB_RUN_ID=${{ github.run_id }} `
-            --build-arg GITHUB_RUN_NUMBER=${{ github.run_number }} `
-            --pull `
+            --push \
             .
 
       - name: docker push
-        if: github.ref != 'refs/heads/main'
-        run: docker push $REGISTRY/$REPOSITORY:$GIT_TAG
-
-      - name: docker push latest
-        if: github.ref != 'refs/heads/main'
+        #if: github.ref != 'refs/heads/main'
+        if: false #disabled as we now use 'docker buildx build'
         run: |
-          docker tag $REGISTRY/$REPOSITORY:$GIT_TAG $REGISTRY/$REPOSITORY
+          docker push $REGISTRY/$REPOSITORY:$GIT_TAG
           docker push $REGISTRY/$REPOSITORY
-
+           
       - name: docker buildx build
-        if: github.ref == 'refs/heads/main'
+        #if: github.ref == 'refs/heads/main'
         run: |
           docker buildx create --name multiarchtest --use
           docker buildx build \
             -t $REGISTRY/$REPOSITORY:$GIT_TAG \
             -t $REGISTRY/$REPOSITORY:latest \
-            -f src/$IMAGE_NAME/Dockerfile.multiarch \
             --label "GITHUB_RUN_ID=${{ github.run_id }}" \
             --label "IMAGE_NAME=$IMAGE_NAME" \
             --build-arg GIT_REPO=$GIT_REPO \
@@ -169,8 +129,8 @@ jobs:
             --build-arg GITHUB_RUN_ID=${{ github.run_id }} \
             --build-arg GITHUB_RUN_NUMBER=${{ github.run_number }} \
             --platform linux/amd64,linux/arm64,linux/arm/v7 \
-            --push \
             --pull \
+            --push \
             .
 
   push_chart:
@@ -179,7 +139,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     permissions:
-      packages: write #for pushing container image
+      packages: write #for pushing helm package
       contents: write #for creating releases/tags
 
     env:
@@ -187,10 +147,10 @@ jobs:
       #REPOSITORY: Note: set dynamically, i.e. github.repository_owner+IMAGE_NAME
       GIT_TAG: ${{ needs.build_app.outputs.SemVer }}
       HELM_EXPERIMENTAL_OCI: 1
-      HELM_VERSION_TO_INSTALL: 3.8.1
+      HELM_VERSION_TO_INSTALL: 3.9.2 #Note: keep this version in sync inside the devcontainer
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0 #Note: shallow clone may break git tag & ct lint...
 
@@ -198,7 +158,7 @@ jobs:
         run: echo "REPOSITORY=${{ github.repository_owner }}/$IMAGE_NAME" >> $GITHUB_ENV
 
       - name: install helm
-        uses: azure/setup-helm@v1
+        uses: azure/setup-helm@v3
         with:
           version: ${{ env.HELM_VERSION_TO_INSTALL }}
 
@@ -206,13 +166,13 @@ jobs:
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${REGISTRY}/${REPOSITORY} --username ${{ github.repository_owner }} --password-stdin
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: 3.7
         if: false #not implemented/working yet
 
       - name: chart-testing (setup)
-        uses: helm/chart-testing-action@v2.2.1
+        uses: helm/chart-testing-action@v2
         if: false #not implemented/working yet
 
       - name: chart-testing (run list-changed)
@@ -229,7 +189,7 @@ jobs:
         if: false #not implemented/working yet
 
       - name: create kind cluster
-        uses: helm/kind-action@v1.2.0
+        uses: helm/kind-action@v1
         #if: steps.list-changed.outputs.changed == 'true'
         if: false #not implemented/working yet
 
@@ -245,7 +205,7 @@ jobs:
         run: |
           helm push ${{ github.workspace }}/artifacts/$IMAGE_NAME-0.1.0.tgz oci://ghcr.io/${{ github.repository_owner }}
 
-      - name: create-release $GIT_TAG
+      - name: create release $GIT_TAG
         uses: softprops/action-gh-release@v1
         if: github.ref == 'refs/heads/main'
         with:

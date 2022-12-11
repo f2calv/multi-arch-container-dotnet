@@ -1,0 +1,42 @@
+{
+	"name": "C# (.NET)",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"args": {
+			// Update 'VARIANT' to pick a .NET Core version: 3.1, 6.0
+			// Append -bullseye or -focal to pin to an OS version.
+			"VARIANT": "7.0-bullseye",
+			// Options
+			"NODE_VERSION": "none"
+		}
+	},
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [5000, 5001],
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "sh . ./.devcontainer/postCreateCommand.sh",
+	"postStartCommand": "sh . ./.devcontainer/postStartCommand.sh",
+	// Configure tool-specific properties.
+	"customizations": {
+		// Configure properties specific to VS Code.
+		"vscode": {
+			// Add the IDs of extensions you want installed when the container is created.
+			"extensions": [
+				"ms-dotnettools.csharp",
+				"ms-azuretools.vscode-docker",
+				"ms-vscode.powershell",
+				"ms-vscode.azurecli"
+			]
+		}
+	},
+	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+	"remoteUser": "vscode",
+	"features": {
+		"docker-from-docker": "latest",
+		"kubectl-helm-minikube": {
+			"version": "latest",
+			"helm": "3.9.2",
+			"minikube": "none"
+		},
+		"powershell": "latest"
+	}
+}
