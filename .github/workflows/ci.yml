@@ -54,7 +54,7 @@ jobs:
         run: dotnet build -c Release --nologo --no-restore -p:Version='${{ steps.gitversion.outputs.FullSemVer }}' -p:SourceRevisionId=${{ github.sha }}
         if: false #disable during debug
 
-      #run dotnet test here...
+      #TODO: run dotnet test here...
 
   build_image:
     runs-on: ubuntu-latest
