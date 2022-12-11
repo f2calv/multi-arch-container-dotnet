@@ -10,7 +10,7 @@ Although I could acheive my goal of deploying the same application to multiple a
 
 This repository contains my learnings and provides a fully working example of building a .NET application container image that is capable of targetting multiple platform architectures - all from a single Dockerfile.
 
-If you find this repository of use then please give it a thumbs-up by giving this repository a :star: ... :wink:
+If you find this repository of use then please massage my ego by giving this repository a :star: ... :wink:
 
 ## Goals
 
@@ -18,7 +18,7 @@ If you find this repository of use then please give it a thumbs-up by giving thi
 - Create GitHub Actions workflow to;
 
   - Push finished multi-architecture container images to GitHub packages.
-  - Push packaged Helm chart to GitHub packages
+  - Push packaged Helm chart to GitHub packages.
 
 ## Runtime Identifiers
 
@@ -33,17 +33,16 @@ RID is short for [Runtime Identifier](https://docs.microsoft.com/en-us/dotnet/co
 
 The .NET workload is an ultra simple worker process (i.e. a console application) which outputs a number of environment variables in a loop for debugging.
 
-Clone the repository and execute the following from the root of the repository;
+Clone the repository (ideally open it as devcontainer) and execute the following PowerShell script from the root of the repository;
 
 ```powershell
-#build the multi-arch image with Docker Desktop;
+#build the multi-arch image locally with Docker Desktop;
 docker buildx create --name multiarchtest --use
-docker buildx build -t multi-arch-container-dotnet:dev -f Dockerfile.multiarch --platform linux/amd64,linux/arm64,linux/arm/v7 --pull .
+docker buildx build -t multi-arch-container-dotnet:dev -f Dockerfile.multiarch --platform linux/arm/v7 --pull -o . .
+#run the multi-arch image on your local Docker Desktop installation (this will use the AMD64 image, assuming you built on an AMD64 CPU architecture!);
+docker run --rm -it --name multi-arch-container-dotnet multi-arch-container-dotnet:dev
 
-#run a pre-built multi-arch image on your local Docker Desktop installation (this will use the AMD64 image);
-docker run --rm -it --name multi-arch-container-dotnet ghcr.io/f2calv/multi-arch-container-dotnet
-
-#run a pre-built multi-arch image on a Kubernetes cluster (this will use the AMD64 or ARM64 or ARM32 image depending on your cluster);
+#run a pre-built multi-arch image on a Kubernetes cluster (this will use the AMD64, ARM64 or ARM32 image depending on your cluster CPU architecture);
 kubectl create deployment --image=ghcr.io/f2calv/multi-arch-container-dotnet multi-arch-container-dotnet
 #watch for successful pod creation
 kubectl get po -w
@@ -73,6 +72,7 @@ $DOCKERHUB_USERNAME = "????" #<------------ populate this variable
 
 - Official Docker documentation about support/implementation for multi-arch images;
 
+  - https://github.com/docker/buildx
   - https://docs.docker.com/desktop/multi-arch/
   - https://docs.docker.com/buildx/working-with-buildx/
   - https://docs.docker.com/engine/reference/commandline/buildx_build/
