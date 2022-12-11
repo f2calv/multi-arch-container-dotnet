@@ -9,7 +9,12 @@ GITHUB_WORKFLOW="n/a"
 GITHUB_RUN_ID=0
 GITHUB_RUN_NUMBER=0
 
+#Create a new builder instance
+#https://github.com/docker/buildx/blob/master/docs/reference/buildx_create.md
 docker buildx create --name multiarchcontainerdotnet --use
+
+#Start a build
+#https://github.com/docker/buildx/blob/master/docs/reference/buildx_build.md
 docker buildx build \
     -t $GIT_REPO:$GIT_TAG \
     -t $GIT_REPO:latest \
@@ -27,11 +32,13 @@ docker buildx build \
     -o type=docker \
     .
 
+#Preview matching images
+#https://docs.docker.com/engine/reference/commandline/images/
 docker images $GIT_REPO
 
-Write-Host "Hit any key to run the image..." 
-pause
+echo "Hit any key to run the image..." 
+read -p "Press any key to resume ..."
 
+#Run the multi-architecture container image
+#https://docs.docker.com/engine/reference/commandline/run/
 docker run --rm -it --name $GIT_REPO $GIT_REPO:$GIT_TAG
-
-
