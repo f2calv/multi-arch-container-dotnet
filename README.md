@@ -38,7 +38,7 @@ Clone the repository and execute the following from the root of the repository;
 ```pwsh
 #build the multi-arch image with Docker Desktop;
 docker buildx create --name multiarchtest --use
-docker buildx build -t dotnetmultiarchapp:dev -f src/dotnetmultiarchapp/Dockerfile.multiarch --platform linux/amd64,linux/arm64,linux/arm/v7 --pull .
+docker buildx build -t dotnetmultiarchapp:dev -f Dockerfile.multiarch --platform linux/amd64,linux/arm64,linux/arm/v7 --pull .
 
 #run a pre-built multi-arch image on your local Docker Desktop installation (this will use the AMD64 image);
 docker run --rm -it --name dotnetmultiarchapp ghcr.io/f2calv/dotnetmultiarchapp

@@ -1,9 +1,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /repo
-COPY ["src/dotnetmultiarchapp/dotnetmultiarchapp.csproj", "src/dotnetmultiarchapp/"]
-RUN dotnet restore "src/dotnetmultiarchapp/dotnetmultiarchapp.csproj"
+COPY ["src/multi-arch-container-dotnet/multi-arch-container-dotnet.csproj", "src/multi-arch-container-dotnet/"]
+RUN dotnet restore "src/multi-arch-container-dotnet/multi-arch-container-dotnet.csproj"
 COPY . .
-RUN dotnet publish "src/dotnetmultiarchapp/dotnetmultiarchapp.csproj" -c Release -o /app/publish --no-restore
+RUN dotnet publish "src/multi-arch-container-dotnet/multi-arch-container-dotnet.csproj" -c Release -o /app/publish --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS final
 WORKDIR /app
@@ -27,4 +27,4 @@ ENV GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER
 
 EXPOSE 80
 
-ENTRYPOINT ["dotnet", "dotnetmultiarchapp.dll"]
+ENTRYPOINT ["dotnet", "multi-arch-container-dotnet.dll"]

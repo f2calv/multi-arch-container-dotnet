@@ -1,7 +1,7 @@
 . ./.scripts/Invoke-Setup.ps1
 
 & "docker" build -t "$($REPOSITORY):$($GIT_TAG)" `
-    -f src/$IMAGE_NAME/Dockerfile `
+    -f Dockerfile `
     --label "GITHUB_RUN_ID=${GITHUB_RUN_ID}" `
     --label "IMAGE_NAME=$IMAGE_NAME" `
     --build-arg GIT_REPO=$GIT_REPO `
