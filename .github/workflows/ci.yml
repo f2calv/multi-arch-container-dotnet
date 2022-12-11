@@ -177,7 +177,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     permissions:
-      packages: write #for pushing container image
+      packages: write #for pushing helm package
       contents: write #for creating releases/tags
 
     env:
@@ -204,13 +204,13 @@ jobs:
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${REGISTRY}/${REPOSITORY} --username ${{ github.repository_owner }} --password-stdin
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: 3.7
         if: false #not implemented/working yet
 
       - name: chart-testing (setup)
-        uses: helm/chart-testing-action@v2.2.1
+        uses: helm/chart-testing-action@v2
         if: false #not implemented/working yet
 
       - name: chart-testing (run list-changed)
@@ -227,7 +227,7 @@ jobs:
         if: false #not implemented/working yet
 
       - name: create kind cluster
-        uses: helm/kind-action@v1.2.0
+        uses: helm/kind-action@v1
         #if: steps.list-changed.outputs.changed == 'true'
         if: false #not implemented/working yet
 
