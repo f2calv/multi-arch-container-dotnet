@@ -57,10 +57,10 @@ For local execution there are two PowerShell scripts you can play with, which wi
 $DOCKERHUB_USERNAME = "????" #<------------ populate this variable
 
 #build/push/run a single architecture image using a 'vanilla' Dockerfile.
-./docker-multi-arch-container-dotnet-singlearch.ps1
+./docker-build.ps1
 
 #multi-build/multi-push/run a multi-architecture image, using a customised Dockerfile.
-./docker-multi-arch-container-dotnet-multiarch.ps1
+./docker-build-multiarch.ps1
 ```
 
 ## Docker, Container & .NET Resources
