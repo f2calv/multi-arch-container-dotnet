@@ -148,7 +148,7 @@ jobs:
       #REPOSITORY: Note: set dynamically, i.e. github.repository_owner+IMAGE_NAME
       GIT_TAG: ${{ needs.build_app.outputs.SemVer }}
       HELM_EXPERIMENTAL_OCI: 1
-      HELM_VERSION_TO_INSTALL: 3.8.1
+      HELM_VERSION_TO_INSTALL: 3.9.2 #Note: keep this version in sync inside the devcontainer
 
     steps:
       - uses: actions/checkout@v3
