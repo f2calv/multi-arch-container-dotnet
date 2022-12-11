@@ -29,27 +29,73 @@ RID is short for [Runtime Identifier](https://docs.microsoft.com/en-us/dotnet/co
 - linux-arm (Linux distributions running on ARM like Raspbian on Raspberry Pi Model 2+)
   - Note: this architecture was not _plain sailing_, but I used a [great solution here](https://github.com/dotnet/dotnet-docker/issues/1537#issuecomment-755351628).
 
-## Demo
+## Run Demo Build
 
 The .NET workload is an ultra simple worker process (i.e. a console application) which outputs a number of environment variables in a loop for debugging.
 
-Clone the repository (ideally open it as devcontainer) and execute the following PowerShell script from the root of the repository;
+First clone the repository (ideally by opening it as [vscode devcontainer](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)) and then from the root of the repository execute either;
 
-```powershell
-#build the multi-arch image locally with Docker Desktop;
-docker buildx create --name multiarchtest --use
-docker buildx build -t multi-arch-container-dotnet:dev -f Dockerfile.multiarch --platform linux/arm/v7 --pull -o type=docker .
-#check the image exists locally
-docker images multi-arch-container-dotnet:dev
-#run the multi-arch image on your local Docker Desktop installation (this will use the AMD64 image, assuming you built on an AMD64 CPU architecture!);
-docker run --rm -it --name multi-arch-container-dotnet multi-arch-container-dotnet:dev
+  ```powershell
+  #PowerShell demo script
+  ./launch.ps1
+  ```
+  
+  Or
+  
+  ```bash
+  #Shell demo script (see below)
+  . launch.sh
+  ```
 
-#run a pre-built multi-arch image on a Kubernetes cluster (this will use the AMD64, ARM64 or ARM32 image depending on your cluster CPU architecture);
-kubectl run -i --tty --attach multi-arch-container-dotnet --image=ghcr.io/f2calv/multi-arch-container-dotnet --image-pull-policy='Always'
-#watch for successful pod creation
-kubectl get po -w
-#attach to view the pod logs
-kubectl logs -f multi-arch-container-dotnet
+### Demo Script
+```shell
+#!/bin/sh
+
+#set variables to emulate running in the workflow/pipeline
+GIT_REPO=$(basename `git rev-parse --show-toplevel`)
+GIT_BRANCH=$(git branch --show-current)
+GIT_COMMIT=$(git rev-parse HEAD)
+GIT_TAG="dev"
+GITHUB_WORKFLOW="n/a"
+GITHUB_RUN_ID=0
+GITHUB_RUN_NUMBER=0
+IMAGE_NAME="$GIT_REPO:$GIT_TAG"
+#Note: you cannot export a buildx container image with manifests, so you have to select just a single architecture
+#$PLATFORM="linux/amd64,linux/arm64,linux/arm/v7"
+PLATFORM="linux/amd64"
+
+#Create a new builder instance
+#https://github.com/docker/buildx/blob/master/docs/reference/buildx_create.md
+docker buildx create --name multiarchcontainerdotnet --use
+
+#Start a build
+#https://github.com/docker/buildx/blob/master/docs/reference/buildx_build.md
+docker buildx build \
+    -t $IMAGE_NAME \
+    -t "$GIT_REPO:latest" \
+    --label "GITHUB_RUN_ID=$GITHUB_RUN_ID" \
+    --label "IMAGE_NAME=$IMAGE_NAME" \
+    --build-arg GIT_REPO=$GIT_REPO \
+    --build-arg GIT_TAG=$GIT_TAG \
+    --build-arg GIT_BRANCH=$GIT_BRANCH \
+    --build-arg GIT_COMMIT=$GIT_COMMIT \
+    --build-arg GITHUB_WORKFLOW=$GITHUB_WORKFLOW \
+    --build-arg GITHUB_RUN_ID=$GITHUB_RUN_ID \
+    --build-arg GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER \
+    --platform $PLATFORM \
+    --pull \
+    -o type=docker \
+    .
+
+#Preview matching images
+#https://docs.docker.com/engine/reference/commandline/images/
+docker images $GIT_REPO
+
+read -p "Hit ENTER to run the '$IMAGE_NAME' image..."
+
+#Run the multi-architecture container image
+#https://docs.docker.com/engine/reference/commandline/run/
+docker run --rm -it --name $GIT_REPO $IMAGE_NAME
 ```
 
 For local execution there are two PowerShell scripts you can try, which will build and push the images to your own Docker Hub account;
