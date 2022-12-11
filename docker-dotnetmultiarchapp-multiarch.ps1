@@ -1,6 +1,6 @@
 . ./.scripts/Invoke-Setup.ps1
 
-docker buildx create --name multiarchtest --use
+docker buildx create --name multiarchtestdotnet --use
 
 & "docker" buildx build -t "$($REPOSITORY):$($GIT_TAG)" `
     -f src/$IMAGE_NAME/Dockerfile.multiarch `
