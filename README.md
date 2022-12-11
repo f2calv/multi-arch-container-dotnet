@@ -54,14 +54,12 @@ kubectl logs -f multi-arch-container-dotnet
 
 For local execution there are two PowerShell scripts you can try, which will build and push the images to your own Docker Hub account;
 
-```powershell
-$DOCKERHUB_USERNAME = "????" #<------------ populate this variable
-
+```bash
 #build/push/run a single architecture image using a 'vanilla' Dockerfile.
-./docker-build.ps1
+. docker-build.sh
 
 #multi-build/multi-push/run a multi-architecture image, using a heavily customised Dockerfile.
-./docker-build-multiarch.ps1
+. docker-build-multiarch.sh
 ```
 
 ## Docker, Container & .NET Resources

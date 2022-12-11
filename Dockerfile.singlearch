@@ -1,19 +1,9 @@
-#FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
-#FROM mcr.microsoft.com/dotnet/sdk:7.0-bullseye-slim-amd64 AS build
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /repo
 COPY ["src/multi-arch-container-dotnet/multi-arch-container-dotnet.csproj", "src/multi-arch-container-dotnet/"]
 RUN dotnet restore "src/multi-arch-container-dotnet/multi-arch-container-dotnet.csproj"
 COPY . .
-ARG TARGETPLATFORM
-RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
-    RID=linux-x64 ; \
-    elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
-    RID=linux-arm64 ; \
-    elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
-    RID=linux-arm ; \
-    fi \
-    && dotnet publish "src/multi-arch-container-dotnet/multi-arch-container-dotnet.csproj" -c Release -o /app/publish -r $RID --self-contained false
+RUN dotnet publish "src/multi-arch-container-dotnet/multi-arch-container-dotnet.csproj" -c Release -o /app/publish --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS final
 WORKDIR /app
