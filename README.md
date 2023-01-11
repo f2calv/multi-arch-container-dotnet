@@ -10,7 +10,7 @@ Although I could achieve my goal of deploying the same application to multiple a
 
 This repository provides a fully working example of building a .NET application container image that is capable of targeting multiple platform architectures - all from a single Dockerfile.
 
-If you find this repository of use then please massage my ego by giving this repository a :star: ... :wink:
+If you find this repository useful then give it a :star: ... :wink:
 
 ## Goals
 
