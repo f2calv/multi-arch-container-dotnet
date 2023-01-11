@@ -9,7 +9,7 @@ GITHUB_WORKFLOW="n/a"
 GITHUB_RUN_ID=0
 GITHUB_RUN_NUMBER=0
 IMAGE_NAME="$GIT_REPO:$GIT_TAG"
-#Note: you cannot export a buildx container image with manifests, so you have to select just a single architecture
+#Note: you cannot export a buildx container image into a local docker instance with multiple architecture manifests so for local testing you have to select just a single architecture.
 #$PLATFORM="linux/amd64,linux/arm64,linux/arm/v7"
 PLATFORM="linux/amd64"
 
