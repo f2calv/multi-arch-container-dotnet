@@ -18,7 +18,6 @@ If you find this repository useful then give it a :star: ... :wink:
 - Create GitHub Actions workflow to;
 
   - Push finished multi-architecture container image to GitHub packages.
-  - Push Helm chart to GitHub packages (still a work in progress)
 
 ## Runtime Identifiers
 

@@ -132,7 +132,8 @@ jobs:
   push_chart:
     runs-on: ubuntu-latest
     needs: [build_app, build_image]
-    if: github.ref == 'refs/heads/main'
+    #if: github.ref == 'refs/heads/main'
+    if: false #TODO: implement helm chart later
 
     permissions:
       packages: write #for pushing helm package
