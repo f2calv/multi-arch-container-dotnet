@@ -6,7 +6,6 @@ echo "-------------------"
 sudo apt-get update
 sudo apt-get upgrade -y
 
-rustup --version
-rustc --version
+dotnet --version
 
 echo "Done"
