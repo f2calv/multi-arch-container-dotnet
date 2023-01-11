@@ -196,6 +196,7 @@ jobs:
       - name: helm package
         run: |
           helm package ${{ github.workspace }}/charts/$IMAGE_NAME/ --destination ${{ github.workspace }}/artifacts/ --app-version ${{ env.GIT_TAG }}
+        if: false #not implemented/working yet
 
       - name: helm push
         run: |
