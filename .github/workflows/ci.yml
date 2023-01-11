@@ -11,6 +11,8 @@ on:
       # - .charts
       - LICENSE
       - README.md
+      - build.sh
+      - build.ps1
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
@@ -86,12 +88,13 @@ jobs:
       - name: docker login ${{ env.REGISTRY }}
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login $REGISTRY -u ${{ github.actor }} --password-stdin
 
-      - name: docker build
-        #if: github.ref != 'refs/heads/main'
-        if: false #disabled as we now use 'docker buildx build'
+      - name: docker buildx build/push
+        if: github.ref == 'refs/heads/main'
         run: |
-          docker build \
+          docker buildx create --name multiarchtest --use
+          docker buildx build \
             -t $REGISTRY/$REPOSITORY:$GIT_TAG \
+            -t $REGISTRY/$REPOSITORY:latest \
             --label "GITHUB_RUN_ID=${{ github.run_id }}" \
             --label "IMAGE_NAME=$IMAGE_NAME" \
             --build-arg GIT_REPO=$GIT_REPO \
@@ -101,24 +104,17 @@ jobs:
             --build-arg GITHUB_WORKFLOW=${{ github.workflow }} \
             --build-arg GITHUB_RUN_ID=${{ github.run_id }} \
             --build-arg GITHUB_RUN_NUMBER=${{ github.run_number }} \
+            --platform linux/amd64,linux/arm64,linux/arm/v7 \
             --pull \
             --push \
             .
 
-      - name: docker push
-        #if: github.ref != 'refs/heads/main'
-        if: false #disabled as we now use 'docker buildx build'
-        run: |
-          docker push $REGISTRY/$REPOSITORY:$GIT_TAG
-          docker push $REGISTRY/$REPOSITORY
-           
-      - name: docker buildx build
-        #if: github.ref == 'refs/heads/main'
+      - name: docker buildx build/push (dev)
+        if: github.ref != 'refs/heads/main'
         run: |
           docker buildx create --name multiarchtest --use
           docker buildx build \
             -t $REGISTRY/$REPOSITORY:$GIT_TAG \
-            -t $REGISTRY/$REPOSITORY:latest \
             --label "GITHUB_RUN_ID=${{ github.run_id }}" \
             --label "IMAGE_NAME=$IMAGE_NAME" \
             --build-arg GIT_REPO=$GIT_REPO \

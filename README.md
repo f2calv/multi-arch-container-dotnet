@@ -2,13 +2,13 @@
 
 ## Introduction
 
-I've been developing a service orientated smart home system which consists of a number of separate containerised workloads all running on an edge Kubernetes cluster (via [Microk8s](https://github.com/canonical/microk8s)), the "cluster" itself is a sole Raspberry Pi 4 (ARMv8).
+I've been developing a service orientated smart home system which consists of a number of containerised workloads running on an edge Kubernetes cluster (via [Microk8s](https://github.com/canonical/microk8s)), the "cluster" itself is a sole Raspberry Pi 4b (ARMv8).
 
-As well as running multiple workloads on the Pi 4 in addition I sometimes run single workloads on another Raspberry Pi 2b (ARMv7) - a very old Pi but very power efficient. And finally I need to run general tests of the workloads on my local Windows development machine prior to deployment to "Production".
+As well as running multiple workloads on the Pi 4b I also run workloads on another Raspberry Pi 2b (ARMv7) which is must older (but very power efficient). And finally I also need to run general tests of the workloads on my local Windows development machine prior to deployment to my "Production cluster", and at a later date I may want to run these workloads on [Azure Kubernetes Service](https://azure.microsoft.com/en-us/products/kubernetes-service/).
 
-Although I could acheive my goal of deploying the same application to multiple architectures using seperate Dockerfiles (i.e. Dockerfile.amd64, Dockerfile.arm64, etc...) in my view that is messy and makes the CI/CD overly complex.
+Although I could achieve my goal of deploying the same application to multiple architectures using separate Dockerfiles (i.e. Dockerfile.amd64, Dockerfile.arm64, etc...) in my view that is messy and makes the CI/CD more complex. I think the single Dockerfile is the elegant approach keeping all build instructions in one place.
 
-This repository contains my learnings and provides a fully working example of building a .NET application container image that is capable of targetting multiple platform architectures - all from a single Dockerfile.
+This repository provides a fully working example of building a .NET application container image that is capable of targeting multiple platform architectures - all from a single Dockerfile.
 
 If you find this repository of use then please massage my ego by giving this repository a :star: ... :wink:
 
@@ -17,8 +17,8 @@ If you find this repository of use then please massage my ego by giving this rep
 - Construct a .NET multi-architecture container image via a single Dockerfile using the `docker buildx` command.
 - Create GitHub Actions workflow to;
 
-  - Push finished multi-architecture container images to GitHub packages.
-  - Push packaged Helm chart to GitHub packages.
+  - Push finished multi-architecture container image to GitHub packages.
+  - Push Helm chart to GitHub packages (still a work in progress)
 
 ## Runtime Identifiers
 
@@ -29,26 +29,39 @@ RID is short for [Runtime Identifier](https://docs.microsoft.com/en-us/dotnet/co
 - linux-arm (Linux distributions running on ARM like Raspbian on Raspberry Pi Model 2+)
   - Note: this architecture was not _plain sailing_, but I used a [great solution here](https://github.com/dotnet/dotnet-docker/issues/1537#issuecomment-755351628).
 
-## Run Demo Build
+## Run Pre-Built Container Image
 
-The .NET workload is an ultra simple worker process (i.e. a console application) which outputs a number of environment variables in a loop for debugging.
+```bash
+#Run pre-built image on Docker
+docker run --pull always --rm -it ghcr.io/f2calv/multi-arch-container-dotnet
 
-First clone the repository (ideally by opening it as [vscode devcontainer](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)) and then from the root of the repository execute either;
+#Run pre-built image on Kubernetes
+kubectl run -i --tty --attach multi-arch-container-dotnet --image=ghcr.io/f2calv/multi-arch-container-dotnet --image-pull-policy='Always'
+kubectl logs -f multi-arch-container-dotnet
+#kubectl delete po multi-arch-container-dotnet
+```
+
+## Self-Build Container Image Locally
+
+The .NET workload is an ultra simple worker process (i.e. a console application) which loops outputting a number of environment variables passed in during the CI process and then baked into the container image.
+
+First clone the repository (ideally by opening it as [vscode devcontainer](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)) and then via a terminal window from the root of the repository execute;
 
   ```powershell
   #demo script PowerShell version
-  ./launch.ps1
+  ./build.ps1
   ```
   
   Or
   
   ```bash
   #demo script Shell version (also below)
-  . launch.sh
+  . build.sh
   ```
 
 ### Shell Demo Script
-```shell
+
+```bash
 #!/bin/sh
 
 #set variables to emulate running in the workflow/pipeline
@@ -60,7 +73,7 @@ GITHUB_WORKFLOW="n/a"
 GITHUB_RUN_ID=0
 GITHUB_RUN_NUMBER=0
 IMAGE_NAME="$GIT_REPO:$GIT_TAG"
-#Note: you cannot export a buildx container image with manifests, so you have to select just a single architecture
+#Note: you cannot export a buildx container image into a local docker instance with multiple architecture manifests so for local testing you have to select just a single architecture.
 #$PLATFORM="linux/amd64,linux/arm64,linux/arm/v7"
 PLATFORM="linux/amd64"
 
@@ -96,6 +109,10 @@ read -p "Hit ENTER to run the '$IMAGE_NAME' image..."
 #Run the multi-architecture container image
 #https://docs.docker.com/engine/reference/commandline/run/
 docker run --rm -it --name $GIT_REPO $IMAGE_NAME
+
+#userprofile=$(wslpath "$(wslvar USERPROFILE)")
+#export KUBECONFIG=$userprofile/.kube/config
+#kubectl run -i --tty --attach multi-arch-container-dotnet --image=ghcr.io/f2calv/multi-arch-container-dotnet --image-pull-policy='Always'
 ```
 
 ## Docker, Container & .NET Resources
@@ -119,3 +136,7 @@ docker run --rm -it --name $GIT_REPO $IMAGE_NAME
   - https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
   - https://docs.microsoft.com/en-us/azure/container-registry/push-multi-architecture-images
   - https://dotnet.microsoft.com/en-us/download/dotnet/7.0
+
+ ## Further Resources
+
+- [Click here for Rust version of this repository...](https://github.com/f2calv/multi-arch-container-rust)
