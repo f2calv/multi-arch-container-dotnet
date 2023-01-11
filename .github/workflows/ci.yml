@@ -11,6 +11,8 @@ on:
       # - .charts
       - LICENSE
       - README.md
+      - build.sh
+      - build.ps1
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]

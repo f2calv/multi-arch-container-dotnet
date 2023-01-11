@@ -49,14 +49,14 @@ First clone the repository (ideally by opening it as [vscode devcontainer](https
 
   ```powershell
   #demo script PowerShell version
-  ./launch.ps1
+  ./build.ps1
   ```
   
   Or
   
   ```bash
   #demo script Shell version (also below)
-  . launch.sh
+  . build.sh
   ```
 
 ### Shell Demo Script
