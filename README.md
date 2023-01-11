@@ -4,11 +4,11 @@
 
 I've been developing a service orientated smart home system which consists of a number of separate containerised workloads all running on an edge Kubernetes cluster (via [Microk8s](https://github.com/canonical/microk8s)), the "cluster" itself is a sole Raspberry Pi 4 (ARMv8).
 
-As well as running multiple workloads on the Pi 4 in addition I sometimes run single workloads on another Raspberry Pi 2b (ARMv7) - a very old Pi but very power efficient. And finally I need to run general tests of the workloads on my local Windows development machine prior to deployment to "Production".
+As well as running multiple workloads on the Pi 4 in addition I run single workloads on another Raspberry Pi 2b (ARMv7) - a very old Pi but very power efficient. And finally I also occasionally need to run general tests of the workloads on my local Windows development machine prior to deployment to my "Production cluster".
 
-Although I could acheive my goal of deploying the same application to multiple architectures using seperate Dockerfiles (i.e. Dockerfile.amd64, Dockerfile.arm64, etc...) in my view that is messy and makes the CI/CD overly complex.
+Although I could achieve my goal of deploying the same application to multiple architectures using separate Dockerfiles (i.e. Dockerfile.amd64, Dockerfile.arm64, etc...) in my view that is messy and makes the CI/CD more complex.
 
-This repository contains my learnings and provides a fully working example of building a .NET application container image that is capable of targetting multiple platform architectures - all from a single Dockerfile.
+This repository contains my learnings and provides a fully working example of building a Rust application container image that is capable of targeting multiple platform architectures - all from a single Dockerfile.
 
 If you find this repository of use then please massage my ego by giving this repository a :star: ... :wink:
 
@@ -17,8 +17,8 @@ If you find this repository of use then please massage my ego by giving this rep
 - Construct a .NET multi-architecture container image via a single Dockerfile using the `docker buildx` command.
 - Create GitHub Actions workflow to;
 
-  - Push finished multi-architecture container images to GitHub packages.
-  - Push packaged Helm chart to GitHub packages.
+  - Push finished multi-architecture container image to GitHub packages.
+  - Push Helm chart to GitHub packages.
 
 ## Runtime Identifiers
 
@@ -29,7 +29,20 @@ RID is short for [Runtime Identifier](https://docs.microsoft.com/en-us/dotnet/co
 - linux-arm (Linux distributions running on ARM like Raspbian on Raspberry Pi Model 2+)
   - Note: this architecture was not _plain sailing_, but I used a [great solution here](https://github.com/dotnet/dotnet-docker/issues/1537#issuecomment-755351628).
 
-## Run Demo Build
+## Run Container
+
+```shell
+#Run the finished container image on a linux/amd64, linux/arm64 or linux/arm/v7 platform on Docker
+
+docker run --rm -it ghcr.io/f2calv/multi-arch-container-dotnet
+
+#or on Kubernetes
+kubectl run -i --tty --attach multi-arch-container-dotnet --image=gcr.io/f2calv/multi-arch-container-dotnet --image-pull-policy='Always'
+kubectl logs -f multi-arch-container-dotnet
+#kubectl delete po multi-arch-container-dotnet
+```
+
+## Self-Build Instructions
 
 The .NET workload is an ultra simple worker process (i.e. a console application) which outputs a number of environment variables in a loop for debugging.
 
@@ -119,3 +132,7 @@ docker run --rm -it --name $GIT_REPO $IMAGE_NAME
   - https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
   - https://docs.microsoft.com/en-us/azure/container-registry/push-multi-architecture-images
   - https://dotnet.microsoft.com/en-us/download/dotnet/7.0
+
+ ## Other Resources
+
+- [Click here for Rust version of this repository...](https://github.com/f2calv/multi-arch-container-rust)
