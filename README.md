@@ -137,6 +137,6 @@ docker run --rm -it --name $GIT_REPO $IMAGE_NAME
   - https://docs.microsoft.com/en-us/azure/container-registry/push-multi-architecture-images
   - https://dotnet.microsoft.com/en-us/download/dotnet/7.0
 
- ## Other Resources
+ ## Further Resources
 
 - [Click here for Rust version of this repository...](https://github.com/f2calv/multi-arch-container-rust)
