@@ -132,8 +132,7 @@ jobs:
   push_chart:
     runs-on: ubuntu-latest
     needs: [build_app, build_image]
-    #if: github.ref == 'refs/heads/main'
-    if: false #TODO: implement helm chart later
+    if: github.ref == 'refs/heads/main'
 
     permissions:
       packages: write #for pushing helm package
@@ -152,7 +151,7 @@ jobs:
           fetch-depth: 0 #Note: shallow clone may break git tag & ct lint...
 
       - name: set vars
-        run: echo "REPOSITORY=${{ github.repository_owner }}/$IMAGE_NAME" >> $GITHUB_ENV
+        run: echo "REPOSITORY=${{ github.repository_owner }}/charts/$IMAGE_NAME" >> $GITHUB_ENV
 
       - name: install helm
         uses: azure/setup-helm@v3
@@ -197,10 +196,12 @@ jobs:
       - name: helm package
         run: |
           helm package ${{ github.workspace }}/charts/$IMAGE_NAME/ --destination ${{ github.workspace }}/artifacts/ --app-version ${{ env.GIT_TAG }}
+        if: false #not implemented/working yet
 
       - name: helm push
         run: |
           helm push ${{ github.workspace }}/artifacts/$IMAGE_NAME-0.1.0.tgz oci://ghcr.io/${{ github.repository_owner }}
+        if: false #not implemented/working yet, need to change the chart version in filename
 
   release:
     needs: [build_app, build_image, push_chart]
