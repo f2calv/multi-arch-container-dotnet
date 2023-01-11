@@ -6,7 +6,7 @@ I've been developing a service orientated smart home system which consists of a 
 
 As well as running multiple workloads on the Pi 4b I also run workloads on another Raspberry Pi 2b (ARMv7) which is must older (but very power efficient). And finally I also need to run general tests of the workloads on my local Windows development machine prior to deployment to my "Production cluster", and at a later date I may want to run these workloads on [Azure Kubernetes Service](https://azure.microsoft.com/en-us/products/kubernetes-service/).
 
-Although I could achieve my goal of deploying the same application to multiple architectures using separate Dockerfiles (i.e. Dockerfile.amd64, Dockerfile.arm64, etc...) in my view that is messy and makes the CI/CD more complex.
+Although I could achieve my goal of deploying the same application to multiple architectures using separate Dockerfiles (i.e. Dockerfile.amd64, Dockerfile.arm64, etc...) in my view that is messy and makes the CI/CD more complex. I think the single Dockerfile is the elegant approach keeping all build instructions in one place.
 
 This repository provides a fully working example of building a .NET application container image that is capable of targeting multiple platform architectures - all from a single Dockerfile.
 
@@ -18,7 +18,7 @@ If you find this repository of use then please massage my ego by giving this rep
 - Create GitHub Actions workflow to;
 
   - Push finished multi-architecture container image to GitHub packages.
-  - Push Helm chart to GitHub packages.
+  - Push Helm chart to GitHub packages (still a work in progress)
 
 ## Runtime Identifiers
 
