@@ -107,7 +107,7 @@ jobs:
             --push \
             .
 
-      - name: docker buildx build/push
+      - name: docker buildx build/push (dev)
         if: github.ref != 'refs/heads/main'
         run: |
           docker buildx create --name multiarchtest --use
