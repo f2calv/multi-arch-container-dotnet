@@ -43,9 +43,9 @@ kubectl logs -f multi-arch-container-dotnet
 
 ## Self-Build Container Image Locally
 
-The .NET workload is an ultra simple worker process (i.e. a console application) which outputs a number of environment variables in a loop for debugging.
+The .NET workload is an ultra simple worker process (i.e. a console application) which loops outputting a number of environment variables passed in during the CI process and then baked into the container image.
 
-First clone the repository (ideally by opening it as [vscode devcontainer](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)) and then from the root of the repository execute either;
+First clone the repository (ideally by opening it as [vscode devcontainer](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)) and then via a terminal window from the root of the repository execute;
 
   ```powershell
   #demo script PowerShell version
