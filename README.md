@@ -31,12 +31,11 @@ RID is short for [Runtime Identifier](https://docs.microsoft.com/en-us/dotnet/co
 
 ## Run Container
 
-```shell
-#Run the finished container image on a linux/amd64, linux/arm64 or linux/arm/v7 platform on Docker
-
+```bash
+#Run pre-built image on Docker
 docker run --rm -it ghcr.io/f2calv/multi-arch-container-dotnet
 
-#or on Kubernetes
+#Run pre-built image on Kubernetes
 kubectl run -i --tty --attach multi-arch-container-dotnet --image=gcr.io/f2calv/multi-arch-container-dotnet --image-pull-policy='Always'
 kubectl logs -f multi-arch-container-dotnet
 #kubectl delete po multi-arch-container-dotnet
@@ -61,7 +60,8 @@ First clone the repository (ideally by opening it as [vscode devcontainer](https
   ```
 
 ### Shell Demo Script
-```shell
+
+```bash
 #!/bin/sh
 
 #set variables to emulate running in the workflow/pipeline
