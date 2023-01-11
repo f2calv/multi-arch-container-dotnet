@@ -202,6 +202,6 @@ jobs:
           helm push ${{ github.workspace }}/artifacts/$IMAGE_NAME-0.1.0.tgz oci://ghcr.io/${{ github.repository_owner }}
 
   release:
-    needs: [build_app, build_image]
+    needs: [build_app, build_image, push_chart]
     if: github.ref == 'refs/heads/main'
     uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
