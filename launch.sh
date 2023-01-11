@@ -45,3 +45,7 @@ read -p "Hit ENTER to run the '$IMAGE_NAME' image..."
 #Run the multi-architecture container image
 #https://docs.docker.com/engine/reference/commandline/run/
 docker run --rm -it --name $GIT_REPO $IMAGE_NAME
+
+#userprofile=$(wslpath "$(wslvar USERPROFILE)")
+#export KUBECONFIG=$userprofile/.kube/config
+#kubectl run -i --tty --attach multi-arch-container-dotnet --image=ghcr.io/f2calv/multi-arch-container-dotnet --image-pull-policy='Always'
