@@ -9,6 +9,7 @@ on:
       # - .github
       # - .scripts
       # - .charts
+      - kustomize
       - LICENSE
       - README.md
       - build.sh
