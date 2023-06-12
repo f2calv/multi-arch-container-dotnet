@@ -209,3 +209,5 @@ jobs:
     needs: [build_app, build_image, push_chart]
     if: github.ref == 'refs/heads/main'
     uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
+    with:
+      tag-prefix: ''
