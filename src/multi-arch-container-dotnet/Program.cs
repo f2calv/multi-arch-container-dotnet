@@ -29,13 +29,13 @@ public class AppSettings
 {
     public AppSettings()
     {
-        GIT_REPO = Environment.GetEnvironmentVariable("GIT_REPO") ?? "n/a";
-        GIT_BRANCH = Environment.GetEnvironmentVariable("GIT_BRANCH") ?? "n/a";
-        GIT_COMMIT = Environment.GetEnvironmentVariable("GIT_COMMIT") ?? "n/a";
-        GIT_TAG = Environment.GetEnvironmentVariable("GIT_TAG") ?? "n/a";
-        GITHUB_WORKFLOW = Environment.GetEnvironmentVariable("GITHUB_WORKFLOW") ?? "n/a";
-        GITHUB_RUN_ID = Environment.GetEnvironmentVariable("GITHUB_RUN_ID") ?? "n/a";
-        GITHUB_RUN_NUMBER = Environment.GetEnvironmentVariable("GITHUB_RUN_NUMBER") ?? "n/a";
+        GIT_REPO = Environment.GetEnvironmentVariable(nameof(GIT_REPO)) ?? "n/a";
+        GIT_BRANCH = Environment.GetEnvironmentVariable(nameof(GIT_BRANCH)) ?? "n/a";
+        GIT_COMMIT = Environment.GetEnvironmentVariable(nameof(GIT_COMMIT)) ?? "n/a";
+        GIT_TAG = Environment.GetEnvironmentVariable(nameof(GIT_TAG)) ?? "n/a";
+        GITHUB_WORKFLOW = Environment.GetEnvironmentVariable(nameof(GITHUB_WORKFLOW)) ?? "n/a";
+        GITHUB_RUN_ID = Environment.GetEnvironmentVariable(nameof(GITHUB_RUN_ID)) ?? "n/a";
+        GITHUB_RUN_NUMBER = Environment.GetEnvironmentVariable(nameof(GITHUB_RUN_NUMBER)) ?? "n/a";
     }
     public string? GIT_REPO { get; }
     public string? GIT_BRANCH { get; }
