@@ -1,7 +1,10 @@
 {
   "profiles": {
     "multi-arch-container-dotnet": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "environmentVariables": {
+        "GIT_REPO": "multi-arch-container-dotnet"
+      }
     }
   }
 }
