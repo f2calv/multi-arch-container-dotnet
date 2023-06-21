@@ -220,3 +220,5 @@ jobs:
     uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
     with:
       tag-prefix: ''
+      move-major-tag: false
+      
