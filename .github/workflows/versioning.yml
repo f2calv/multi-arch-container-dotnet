@@ -2,14 +2,20 @@ name: ci
 
 on:
   workflow_call:
+    outputs:
+      semVer:
+        description: e.g. 1.2.3
+        value: ${{ jobs.get-version.outputs.semVer }}
+      fullSemVer:
+        description: e.g. 1.2.3-branchname-feature.3
+        value: ${{ jobs.get-version.outputs.fullSemVer }}
 
 jobs:
-  build_app:
+  get-version:
     runs-on: ubuntu-latest
     outputs:
       semVer: ${{ steps.gitversion.outputs.semVer }}
       fullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}
-
     steps:
       - uses: actions/checkout@v3
         with:
