@@ -21,7 +21,7 @@ on:
         default: latest-dev
       platform:
         type: string
-        description: Specify the target platform for the build output, (for example, linux/amd64, linux/arm64, or darwin/amd64)
+        description: Specify the target platform for the build output, e.g. linux/amd64,linux/arm64,linux/arm/v7
         default: linux/amd64,linux/arm64,linux/arm/v7
 
 jobs:
@@ -31,11 +31,6 @@ jobs:
     #https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
     permissions:
       packages: write #for pushing container image
-    env:
-      GIT_REPO: ${{ github.repository }}
-      GIT_TAG: ${{ inputs.semVer }}
-      GIT_BRANCH: ${{ github.ref }}
-      GIT_COMMIT: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v3
 
@@ -72,10 +67,11 @@ jobs:
             "${SOME_OPT[@]}" \
             --label "GITHUB_RUN_ID=${{ github.run_id }}" \
             --label "IMAGE_NAME=$IMAGE_NAME" \
-            --build-arg GIT_REPO=$GIT_REPO \
-            --build-arg GIT_TAG=$GIT_TAG \
-            --build-arg GIT_BRANCH=$GIT_BRANCH \
-            --build-arg GIT_COMMIT=$GIT_COMMIT \
+            --label "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
+            --build-arg GIT_REPO=${{ github.repository }} \
+            --build-arg GIT_TAG=${{ inputs.semVer }} \
+            --build-arg GIT_BRANCH=${{ github.ref }} \
+            --build-arg GIT_COMMIT=${{ github.sha }} \
             --build-arg GITHUB_WORKFLOW=${{ github.workflow }} \
             --build-arg GITHUB_RUN_ID=${{ github.run_id }} \
             --build-arg GITHUB_RUN_NUMBER=${{ github.run_number }} \
