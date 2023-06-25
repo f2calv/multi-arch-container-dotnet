@@ -34,91 +34,17 @@ jobs:
     with:
       semVer: ${{ needs.versioning.outputs.semVer }}
 
-  push_chart:
-    runs-on: ubuntu-latest
+  chart:
+    uses: ./.github/workflows/build-chart.yml
     needs: [versioning, app, image]
+    with:
+      semVer: ${{ needs.versioning.outputs.semVer }}
     if: github.ref == 'refs/heads/main'
-    permissions:
-      packages: write #for pushing helm package
-      contents: write #for creating releases/tags
-    env:
-      REGISTRY: ghcr.io
-      #CHART_REPOSITORY: Note: set dynamically, i.e. github.repository_owner/charts/IMAGE_NAME
-      GIT_TAG: ${{ needs.versioning.outputs.semVer }}
-      HELM_EXPERIMENTAL_OCI: 1
-      HELM_VERSION_TO_INSTALL: 3.9.2 #Note: keep this version in sync inside the devcontainer
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 #Note: shallow clone may break git tag & ct lint...
-
-      - name: set vars (1 of 3)
-        run: |
-          IMAGE_NAME=$(echo $REPOSITORY | sed "s|$USERNAME\/||g")
-          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
-
-      - name: set vars (2 of 3)
-        run: echo "CHART_REPOSITORY=${{ github.repository_owner }}/charts/$IMAGE_NAME" >> $GITHUB_ENV
-
-      - name: set vars (3 of 3) #pulls helm version from devcontainer
-        run: |
-          HELM_VERSION_TO_INSTALL=$(cat .devcontainer/devcontainer.json | jq -r '.features."kubectl-helm-minikube".helm')
-          echo "HELM_VERSION_TO_INSTALL=$HELM_VERSION_TO_INSTALL" >> $GITHUB_ENV
-
-      - name: install helm
-        uses: azure/setup-helm@v3
-        with:
-          version: ${{ env.HELM_VERSION_TO_INSTALL }}
-
-      - name: helm registry login
-        run: |
-          echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${REGISTRY}/${CHART_REPOSITORY} --username ${{ github.repository_owner }} --password-stdin
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.7
-        if: false #not implemented/working yet
-
-      - name: chart-testing (setup)
-        uses: helm/chart-testing-action@v2
-        if: false #not implemented/working yet
-
-      - name: chart-testing (run list-changed)
-        id: list-changed
-        run: |
-          changed=$(ct list-changed --target-branch main)
-          if [[ -n "$changed" ]]; then
-            echo "::set-output name=changed::true"
-          fi
-        if: false #not implemented/working yet
-
-      - name: chart-testing (run lint)
-        run: ct lint
-        if: false #not implemented/working yet
-
-      - name: create kind cluster
-        uses: helm/kind-action@v1
-        #if: steps.list-changed.outputs.changed == 'true'
-        if: false #not implemented/working yet
-
-      - name: chart-testing (run install)
-        run: ct install
-        if: false #not implemented/working yet
-
-      - name: helm package
-        run: |
-          helm package ${{ github.workspace }}/charts/$IMAGE_NAME/ --destination ${{ github.workspace }}/artifacts/ --app-version ${{ env.GIT_TAG }}
-        if: false #not implemented/working yet
-
-      - name: helm push
-        run: |
-          helm push ${{ github.workspace }}/artifacts/$IMAGE_NAME-0.1.0.tgz oci://ghcr.io/${{ github.repository_owner }}
-        if: false #not implemented/working yet, need to change the chart version in filename
 
   release:
-    needs: [app, image, push_chart]
+    needs: [versioning, app, image, chart]
     if: github.ref == 'refs/heads/main'
     uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
     with:
       tag-prefix: ''
-      move-major-tag: false      
+      move-major-tag: false
