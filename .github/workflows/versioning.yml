@@ -1,13 +1,13 @@
-name: ci
+name: versioning
 
 on:
   workflow_call:
     outputs:
       semVer:
-        description: e.g. 1.2.3
+        description: i.e. 1.2.3
         value: ${{ jobs.get-version.outputs.semVer }}
       fullSemVer:
-        description: e.g. 1.2.3-branchname-feature.3
+        description: i.e. 1.2.3-feature-my-feature.12
         value: ${{ jobs.get-version.outputs.fullSemVer }}
 
 jobs:
@@ -26,12 +26,21 @@ jobs:
         with:
           dotnet-version: 7.0.x
 
-      - name: gitversion (1 of 2)
+      - name: gitversion (1 of 3)
+        run: |
+          FILE=GitVersion.yml
+          if [[ -f "$FILE" ]]; then
+            echo "$FILE exists"
+          else
+            echo "::error file=GitVersion.yml::Repository versioning is managed by GitVersion, '$FILE' is therefore required!"
+          fi
+
+      - name: gitversion (2 of 3)
         uses: gittools/actions/gitversion/setup@v0
         with:
           versionSpec: 5.x
 
-      - name: gitversion (2 of 2)
+      - name: gitversion (3 of 3)
         id: gitversion
         uses: gittools/actions/gitversion/execute@v0
         with:
