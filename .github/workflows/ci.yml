@@ -23,84 +23,20 @@ jobs:
     uses: ./.github/workflows/versioning.yml
 
   app:
-    uses: ./.github/workflows/app-build.yml
+    uses: ./.github/workflows/build-app.yml
     needs: versioning
     with:
       fullSemVer: ${{ needs.versioning.outputs.fullSemVer }}
 
-  build_image:
-    runs-on: ubuntu-latest
+  image:
+    uses: ./.github/workflows/build-image.yml
     needs: [versioning, app]
-    #https://github.blog/changelog/2021-04-20-github-actions-control-permissions-for-github_token/
-    #https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
-    permissions:
-      packages: write #for pushing container image
-    env:
-      REGISTRY: ghcr.io
-      REPOSITORY: ${{ github.repository }}
-      GIT_REPO: ${{ github.repository }}
-      GIT_TAG: ${{ needs.versioning.outputs.semVer }}
-      GIT_BRANCH: ${{ github.ref }}
-      GIT_COMMIT: ${{ github.sha }}
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: set vars (1 of 2)
-        run: |
-          IMAGE_NAME=$(echo $REPOSITORY | sed "s|${{ github.repository_owner }}\/||g")
-          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
-
-      - name: set vars (2 of 2)
-        if: github.ref != 'refs/heads/main' #non-default branch use a simplistic SemVer
-        run: echo "GIT_TAG=dev" >> $GITHUB_ENV
-
-      - name: docker login ${{ env.REGISTRY }}
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login $REGISTRY -u ${{ github.actor }} --password-stdin
-
-      - name: docker buildx build/push
-        if: github.ref == 'refs/heads/main'
-        run: |
-          docker buildx create --name multiarchtest --use
-          docker buildx build \
-            -t $REGISTRY/$REPOSITORY:$GIT_TAG \
-            -t $REGISTRY/$REPOSITORY:latest \
-            --label "GITHUB_RUN_ID=${{ github.run_id }}" \
-            --label "IMAGE_NAME=$IMAGE_NAME" \
-            --build-arg GIT_REPO=$GIT_REPO \
-            --build-arg GIT_TAG=$GIT_TAG \
-            --build-arg GIT_BRANCH=$GIT_BRANCH \
-            --build-arg GIT_COMMIT=$GIT_COMMIT \
-            --build-arg GITHUB_WORKFLOW=${{ github.workflow }} \
-            --build-arg GITHUB_RUN_ID=${{ github.run_id }} \
-            --build-arg GITHUB_RUN_NUMBER=${{ github.run_number }} \
-            --platform linux/amd64,linux/arm64,linux/arm/v7 \
-            --pull \
-            --push \
-            .
-
-      - name: docker buildx build/push (dev)
-        if: github.ref != 'refs/heads/main'
-        run: |
-          docker buildx create --name multiarchtest --use
-          docker buildx build \
-            -t $REGISTRY/$REPOSITORY:$GIT_TAG \
-            --label "GITHUB_RUN_ID=${{ github.run_id }}" \
-            --label "IMAGE_NAME=$IMAGE_NAME" \
-            --build-arg GIT_REPO=$GIT_REPO \
-            --build-arg GIT_TAG=$GIT_TAG \
-            --build-arg GIT_BRANCH=$GIT_BRANCH \
-            --build-arg GIT_COMMIT=$GIT_COMMIT \
-            --build-arg GITHUB_WORKFLOW=${{ github.workflow }} \
-            --build-arg GITHUB_RUN_ID=${{ github.run_id }} \
-            --build-arg GITHUB_RUN_NUMBER=${{ github.run_number }} \
-            --platform linux/amd64,linux/arm64,linux/arm/v7 \
-            --pull \
-            --push \
-            .
+    with:
+      semVer: ${{ needs.versioning.outputs.semVer }}
 
   push_chart:
     runs-on: ubuntu-latest
-    needs: [versioning, app, build_image]
+    needs: [versioning, app, image]
     if: github.ref == 'refs/heads/main'
     permissions:
       packages: write #for pushing helm package
@@ -180,7 +116,7 @@ jobs:
         if: false #not implemented/working yet, need to change the chart version in filename
 
   release:
-    needs: [app, build_image, push_chart]
+    needs: [app, image, push_chart]
     if: github.ref == 'refs/heads/main'
     uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
     with:
