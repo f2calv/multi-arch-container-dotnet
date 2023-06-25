@@ -1,0 +1,23 @@
+name: app-build
+
+on:
+  workflow_call:
+    inputs:
+      fullSemVer:
+        type: string
+        description: e.g. 1.2.3-feature-my-feature.12
+        required: true
+
+jobs:
+  app-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: dotnet restore
+        run: dotnet restore --verbosity minimal --configfile NuGet.config
+
+      - name: dotnet build
+        run: dotnet build -c Release --nologo --no-restore -p:Version='${{ inputs.fullSemVer }}' -p:SourceRevisionId=${{ github.sha }}
+
+      #TODO: could run dotnet test here, etc...
