@@ -1,0 +1,81 @@
+name: build-image
+
+on:
+  workflow_call:
+    inputs:
+      semVer:
+        type: string
+        description: e.g. 1.2.3-feature-my-feature.12
+        required: true
+      registry:
+        type: string
+        description: e.g. ghcr.io or docker.io
+        default: ghcr.io
+      tagOverride:
+        type: string
+        description: Default branch tag override, i.e. tag 1.2.3 -> latest
+        default: latest
+      devTagOverride:
+        type: string
+        description: Feature branch tag override, i.e. tag 1.2.3-feature-my-feature.12 -> latest-dev
+        default: latest-dev
+      platform:
+        type: string
+        description: Specify the target platform for the build output, e.g. linux/amd64,linux/arm64,linux/arm/v7
+        default: linux/amd64,linux/arm64,linux/arm/v7
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    #https://github.blog/changelog/2021-04-20-github-actions-control-permissions-for-github_token/
+    #https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+    permissions:
+      packages: write #for pushing container image
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: set vars (1 of 3)
+        run: |
+          IMAGE_NAME=$(echo ${{ github.repository }} | sed "s|${{ github.repository_owner }}\/||g")
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+
+      - name: set vars (2 of 3)
+        if: github.ref != 'refs/heads/main' #feature branch use devTagOverride
+        run: |
+          echo "TAG=${{ inputs.devTagOverride }}" >> $GITHUB_ENV
+
+      - name: set vars (3 of 3)
+        if: github.ref == 'refs/heads/main' #default branch use tagOverride
+        run: |
+          echo "TAG=${{ inputs.tagOverride }}" >> $GITHUB_ENV
+          echo "OVERRIDE_TAG=${{ inputs.semVer }}" >> $GITHUB_ENV
+
+      - name: docker login ${{ inputs.registry }}
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ inputs.registry }} -u ${{ github.actor }} --password-stdin
+
+      - name: docker buildx build/push
+        run: |
+          docker buildx create --name multiarchtest --use
+
+          SOME_OPT=()
+          if [ ! -z "$OVERRIDE_TAG" ]; then
+            SOME_OPT=(-t "${{ inputs.registry }}/${{ github.repository }}:$OVERRIDE_TAG")
+          fi
+
+          docker buildx build \
+            -t ${{ inputs.registry }}/${{ github.repository }}:$TAG \
+            "${SOME_OPT[@]}" \
+            --label "GITHUB_RUN_ID=${{ github.run_id }}" \
+            --label "IMAGE_NAME=$IMAGE_NAME" \
+            --label "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
+            --build-arg GIT_REPO=${{ github.repository }} \
+            --build-arg GIT_TAG=${{ inputs.semVer }} \
+            --build-arg GIT_BRANCH=${{ github.ref }} \
+            --build-arg GIT_COMMIT=${{ github.sha }} \
+            --build-arg GITHUB_WORKFLOW=${{ github.workflow }} \
+            --build-arg GITHUB_RUN_ID=${{ github.run_id }} \
+            --build-arg GITHUB_RUN_NUMBER=${{ github.run_number }} \
+            --platform ${{ inputs.platform }} \
+            --pull \
+            --push \
+            .
