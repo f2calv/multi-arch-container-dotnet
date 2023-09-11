@@ -32,7 +32,7 @@ jobs:
     permissions:
       packages: write #for pushing container image
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: set vars (1 of 3)
         run: |
