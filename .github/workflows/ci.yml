@@ -37,7 +37,7 @@ jobs:
   chart:
     uses: ./.github/workflows/build-chart.yml
     needs: [versioning, app, image]
-    if: github.ref == 'refs/heads/main'
+    #if: github.ref == 'refs/heads/main'
     with:
       semVer: ${{ needs.versioning.outputs.semVer }}
 
