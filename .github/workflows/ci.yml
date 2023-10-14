@@ -19,6 +19,12 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
+  chart2:
+    uses: ./.github/workflows/build-chart.yml
+    #if: github.ref == 'refs/heads/main'
+    with:
+      semVer: 1.2.3
+
   versioning:
     uses: ./.github/workflows/versioning.yml
 
