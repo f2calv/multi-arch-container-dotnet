@@ -19,12 +19,6 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  chart2:
-    uses: ./.github/workflows/build-chart.yml
-    #if: github.ref == 'refs/heads/main'
-    with:
-      semVer: 1.2.3
-
   versioning:
     uses: ./.github/workflows/versioning.yml
 
@@ -43,7 +37,7 @@ jobs:
   chart:
     uses: ./.github/workflows/build-chart.yml
     needs: [versioning, app, image]
-    #if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     with:
       semVer: ${{ needs.versioning.outputs.semVer }}
 
