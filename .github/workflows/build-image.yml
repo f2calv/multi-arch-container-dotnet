@@ -32,7 +32,7 @@ jobs:
     permissions:
       packages: write #for pushing container image
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: set vars (1 of 3)
         run: |
@@ -62,7 +62,7 @@ jobs:
           if [ ! -z "$OVERRIDE_TAG" ]; then
             OPT_TAG=(-t "${{ inputs.registry }}/${{ github.repository }}:$OVERRIDE_TAG")
           fi
-          
+
           OPT_PUSH=()
           if [ ! -z "$IMAGE_PUSH" ]; then
             OPT_PUSH=(--push)

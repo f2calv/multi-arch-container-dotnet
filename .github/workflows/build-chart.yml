@@ -18,7 +18,7 @@ jobs:
       #CHART_REPOSITORY: Note: set dynamically, i.e. github.repository_owner/charts/IMAGE_NAME
       GIT_TAG: ${{ inputs.semVer }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: set vars (1 of 3)
         run: |
