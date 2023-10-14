@@ -30,7 +30,9 @@ jobs:
 
       - name: set vars (3 of 3) #pulls helm version from devcontainer
         run: |
-          HELM_VERSION_TO_INSTALL=$(cat .devcontainer/devcontainer.json | jq -r '.features."ghcr.io/devcontainers/features/kubectl-helm-minikube:1".helm')
+          apt-get install -y node-json5
+          json5 -c .devcontainer/devcontainer.json
+          HELM_VERSION_TO_INSTALL=$(cat .devcontainer/devcontainer.json | jq -r '.features[] | select(.helm | . != null).helm')
           echo "HELM_VERSION_TO_INSTALL=$HELM_VERSION_TO_INSTALL" >> $GITHUB_ENV
           echo $HELM_VERSION_TO_INSTALL
 
