@@ -32,7 +32,7 @@ jobs:
     permissions:
       packages: write #for pushing container image
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: set vars (1 of 3)
         run: |
@@ -49,6 +49,7 @@ jobs:
         run: |
           echo "TAG=${{ inputs.tagOverride }}" >> $GITHUB_ENV
           echo "OVERRIDE_TAG=${{ inputs.semVer }}" >> $GITHUB_ENV
+          echo "IMAGE_PUSH=true" >> $GITHUB_ENV
 
       - name: docker login ${{ inputs.registry }}
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ inputs.registry }} -u ${{ github.actor }} --password-stdin
@@ -57,14 +58,19 @@ jobs:
         run: |
           docker buildx create --name multiarchtest --use
 
-          SOME_OPT=()
+          OPT_TAG=()
           if [ ! -z "$OVERRIDE_TAG" ]; then
-            SOME_OPT=(-t "${{ inputs.registry }}/${{ github.repository }}:$OVERRIDE_TAG")
+            OPT_TAG=(-t "${{ inputs.registry }}/${{ github.repository }}:$OVERRIDE_TAG")
+          fi
+
+          OPT_PUSH=()
+          if [ ! -z "$IMAGE_PUSH" ]; then
+            OPT_PUSH=(--push)
           fi
 
           docker buildx build \
             -t ${{ inputs.registry }}/${{ github.repository }}:$TAG \
-            "${SOME_OPT[@]}" \
+            "${OPT_TAG[@]}" \
             --label "GITHUB_RUN_ID=${{ github.run_id }}" \
             --label "IMAGE_NAME=$IMAGE_NAME" \
             --label "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
@@ -77,5 +83,5 @@ jobs:
             --build-arg GITHUB_RUN_NUMBER=${{ github.run_number }} \
             --platform ${{ inputs.platform }} \
             --pull \
-            --push \
+            "${OPT_PUSH[@]}" \
             .

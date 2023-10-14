@@ -13,17 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: write #for pushing helm package
-      contents: write #for creating releases/tags
     env:
       REGISTRY: ghcr.io
       #CHART_REPOSITORY: Note: set dynamically, i.e. github.repository_owner/charts/IMAGE_NAME
       GIT_TAG: ${{ inputs.semVer }}
-      HELM_EXPERIMENTAL_OCI: 1
-      HELM_VERSION_TO_INSTALL: 3.9.2 #Note: keep this version in sync inside the devcontainer
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 #Note: shallow clone may break git tag & ct lint...
+      - uses: actions/checkout@v4
 
       - name: set vars (1 of 3)
         run: |
@@ -35,8 +30,11 @@ jobs:
 
       - name: set vars (3 of 3) #pulls helm version from devcontainer
         run: |
-          HELM_VERSION_TO_INSTALL=$(cat .devcontainer/devcontainer.json | jq -r '.features."kubectl-helm-minikube".helm')
+          npm install --global json5
+          json5 -c .devcontainer/devcontainer.json
+          HELM_VERSION_TO_INSTALL=$(cat .devcontainer/devcontainer.json | jq -r '.features[] | select(.helm | . != null).helm')
           echo "HELM_VERSION_TO_INSTALL=$HELM_VERSION_TO_INSTALL" >> $GITHUB_ENV
+          echo $HELM_VERSION_TO_INSTALL
 
       - name: install helm
         uses: azure/setup-helm@v3

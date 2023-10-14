@@ -1,32 +1,51 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.245.2/containers/rust
 {
 	"name": "C# (.NET)",
 	"build": {
 		"dockerfile": "Dockerfile",
 		"args": {
+			// Use the VARIANT arg to pick a Debian OS version: buster, bullseye
+			// Use bullseye when on local on arm64/Apple Silicon.
 			"VARIANT": "7.0-bullseye",
 			"NODE_VERSION": "none"
 		}
 	},
-	"postCreateCommand": "sh . ./.devcontainer/postCreateCommand.sh",
-	"postStartCommand": "sh . ./.devcontainer/postStartCommand.sh",
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"ms-dotnettools.csharp",
-				"ms-azuretools.vscode-docker",
-				"ms-vscode.powershell",
-				"ms-vscode.azurecli"
-			]
-		}
-	},
-	"remoteUser": "vscode",
+	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
-		"docker-from-docker": "latest",
-		"kubectl-helm-minikube": {
+		"ghcr.io/devcontainers/features/powershell:1": {},
+		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
 			"version": "latest",
 			"helm": "3.9.2",
 			"minikube": "none"
 		},
-		"powershell": "latest"
-	}
+		"ghcr.io/eitsupi/devcontainer-features/jq-likes:2": {
+			"jqVersion": "latest",
+			"yqVersion": "latest"
+		}
+	},
+	// Configure tool-specific properties.
+	"customizations": {
+		// Configure properties specific to VS Code.
+		"vscode": {
+			// Add the IDs of extensions you want installed when the container is created.
+			"extensions": [
+				"ms-dotnettools.csharp",
+				"ms-vscode.powershell",
+				"ms-vscode.azurecli",
+				"ms-azuretools.vscode-docker",
+				"ms-vscode-remote.vscode-remote-extensionpack",
+				"mutantdino.resourcemonitor"
+			]
+		}
+	},
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "rustc --version",
+	"postCreateCommand": "sh . ./.devcontainer/postCreateCommand.sh",
+	"postStartCommand": "sh . ./.devcontainer/postStartCommand.sh",
+	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+	"remoteUser": "vscode"
 }
