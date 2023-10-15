@@ -3,14 +3,17 @@ name: build-image
 on:
   workflow_call:
     inputs:
-      semVer:
-        type: string
-        description: e.g. 1.2.3-feature-my-feature.12
-        required: true
       registry:
         type: string
         description: e.g. ghcr.io or docker.io
         default: ghcr.io
+      repositoryOverride:
+        type: string
+        description: Default repository is the name of the repo, i.e. f2calv/my-repo-name
+      tag:
+        type: string
+        description: e.g. 1.2.3-feature-my-feature.12
+        required: true
       tagOverride:
         type: string
         description: Default branch tag override, i.e. tag 1.2.3 -> latest
@@ -23,6 +26,17 @@ on:
         type: string
         description: Specify the target platform for the build output, e.g. linux/amd64,linux/arm64,linux/arm/v7
         default: linux/amd64,linux/arm64,linux/arm/v7
+      pushOverride:
+        type: boolean
+        description: image push happens only on default branch, override by setting true
+        default: false
+    outputs:
+      deployableRepository:
+        description: Deployable repository name, e.g. lowercase owner/repo-name
+        value: ${{ jobs.build-image.outputs.deployableRepository }}
+      deployableTag:
+        description: Most unique deployable tag, e.g. 1.2.3 or latest-dev
+        value: ${{ jobs.build-image.outputs.deployableTag }}
 
 jobs:
   build-image:
@@ -31,51 +45,92 @@ jobs:
     #https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
     permissions:
       packages: write #for pushing container image
+    outputs:
+      deployableRepository: ${{ steps.setupvars.outputs.deployableRepository }}
+      deployableTag: ${{ steps.build.outputs.deployableTag }}
     steps:
       - uses: actions/checkout@v4
 
       - name: set vars (1 of 3)
+        id: setupvars
         run: |
-          IMAGE_NAME=$(echo ${{ github.repository }} | sed "s|${{ github.repository_owner }}\/||g")
-          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+          REPOSITORY_OVERRIDE=${{ inputs.repositoryOverride }}
+
+          if [ ! -z "$REPOSITORY_OVERRIDE" ]; then
+            #set the repository to the repositoryOverride & lowercase the input
+            REPOSITORY=${REPOSITORY_OVERRIDE,,}
+
+            echo "IMAGE_NAME=$REPOSITORY" >> $GITHUB_ENV
+          else
+            #set the repository to the current gh repository
+            REPOSITORY=${{ github.repository }}
+            #strip the repository_owner away from the repository name to get the image name
+            IMAGE_NAME=$(echo $REPOSITORY | sed "s|${{ github.repository_owner }}\/||g")
+            #lowercase the IMAGE_NAME
+            IMAGE_NAME=${IMAGE_NAME,,}
+            echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+
+            #lowercase the repository var and override the env variable
+            REPOSITORY=${REPOSITORY,,}
+          fi
+          echo "REPOSITORY=$REPOSITORY" >> $GITHUB_ENV
+          echo "deployableRepository=$REPOSITORY" >> $GITHUB_OUTPUT
 
       - name: set vars (2 of 3)
         if: github.ref != 'refs/heads/main' #feature branch use devTagOverride
         run: |
-          echo "TAG=${{ inputs.devTagOverride }}" >> $GITHUB_ENV
+          TAG=${{ inputs.devTagOverride }}
+          if [ ! -z "$TAG" ]; then
+            TAG=${TAG,,}
+          else
+            TAG=${{ inputs.tag }}
+            TAG=${TAG,,}
+          fi
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          echo "IMAGE_PUSH=${{ inputs.pushOverride }}" >> $GITHUB_ENV
 
       - name: set vars (3 of 3)
         if: github.ref == 'refs/heads/main' #default branch use tagOverride
+        id: tagging
         run: |
-          echo "TAG=${{ inputs.tagOverride }}" >> $GITHUB_ENV
-          echo "OVERRIDE_TAG=${{ inputs.semVer }}" >> $GITHUB_ENV
+          TAG=${{ inputs.tag }}
+          TAG=${TAG,,}
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          
+          OVERRIDE_TAG=${{ inputs.tagOverride }}
+          OVERRIDE_TAG=${OVERRIDE_TAG,,}
+          echo "OVERRIDE_TAG=$OVERRIDE_TAG" >> $GITHUB_ENV
           echo "IMAGE_PUSH=true" >> $GITHUB_ENV
 
       - name: docker login ${{ inputs.registry }}
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ inputs.registry }} -u ${{ github.actor }} --password-stdin
 
       - name: docker buildx build/push
+        id: build
         run: |
           docker buildx create --name multiarchtest --use
 
           OPT_TAG=()
           if [ ! -z "$OVERRIDE_TAG" ]; then
-            OPT_TAG=(-t "${{ inputs.registry }}/${{ github.repository }}:$OVERRIDE_TAG")
+            OPT_TAG=(-t "${{ inputs.registry }}/$REPOSITORY:$OVERRIDE_TAG")
+            echo "deployableTag=$OVERRIDE_TAG" >> $GITHUB_OUTPUT
+          else
+            echo "deployableTag=$TAG" >> $GITHUB_OUTPUT
           fi
 
           OPT_PUSH=()
-          if [ ! -z "$IMAGE_PUSH" ]; then
+          if [ "$IMAGE_PUSH" == "true" ]; then
             OPT_PUSH=(--push)
           fi
 
           docker buildx build \
-            -t ${{ inputs.registry }}/${{ github.repository }}:$TAG \
+            -t ${{ inputs.registry }}/$REPOSITORY:$TAG \
             "${OPT_TAG[@]}" \
             --label "GITHUB_RUN_ID=${{ github.run_id }}" \
             --label "IMAGE_NAME=$IMAGE_NAME" \
             --label "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
             --build-arg GIT_REPO=${{ github.repository }} \
-            --build-arg GIT_TAG=${{ inputs.semVer }} \
+            --build-arg GIT_TAG=${{ inputs.tag }} \
             --build-arg GIT_BRANCH=${{ github.ref }} \
             --build-arg GIT_COMMIT=${{ github.sha }} \
             --build-arg GITHUB_WORKFLOW=${{ github.workflow }} \

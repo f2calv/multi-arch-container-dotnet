@@ -32,7 +32,7 @@ jobs:
     uses: ./.github/workflows/build-image.yml
     needs: [versioning, app]
     with:
-      semVer: ${{ needs.versioning.outputs.semVer }}
+      tag: ${{ needs.versioning.outputs.semVer }}
 
   chart:
     uses: ./.github/workflows/build-chart.yml
