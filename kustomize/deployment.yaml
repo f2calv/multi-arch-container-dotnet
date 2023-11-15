@@ -18,7 +18,7 @@ spec:
       containers:
       - name: primary
         image: ghcr.io/f2calv/multi-arch-container-dotnet:dev
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
         - name: http
           containerPort: 80
