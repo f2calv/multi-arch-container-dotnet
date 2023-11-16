@@ -67,7 +67,7 @@ First clone the repository (ideally by opening it as [vscode devcontainer](https
 GIT_REPO=$(basename `git rev-parse --show-toplevel`)
 GIT_BRANCH=$(git branch --show-current)
 GIT_COMMIT=$(git rev-parse HEAD)
-GIT_TAG="dev"
+GIT_TAG="latest-dev"
 GITHUB_WORKFLOW="n/a"
 GITHUB_RUN_ID=0
 GITHUB_RUN_NUMBER=0
