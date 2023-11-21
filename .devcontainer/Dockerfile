@@ -1,6 +1,6 @@
 # See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.245.2/containers/dotnet/.devcontainer/base.Dockerfile
 
-ARG VARIANT="7.0-bullseye-slim"
+ARG VARIANT="8.0-bookworm-slim"
 FROM mcr.microsoft.com/vscode/devcontainers/dotnet:0-${VARIANT}
 
 # [Choice] Node.js version: none, lts/*, 18, 16, 14
