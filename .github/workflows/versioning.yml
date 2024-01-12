@@ -21,10 +21,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: .NET 7.x SDK
-        uses: actions/setup-dotnet@v3
+      - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 7.0.x
+          dotnet-version: 8.0.x
 
       - name: gitversion (1 of 3)
         run: |

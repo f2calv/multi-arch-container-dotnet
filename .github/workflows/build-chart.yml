@@ -36,8 +36,7 @@ jobs:
           echo "HELM_VERSION_TO_INSTALL=$HELM_VERSION_TO_INSTALL" >> $GITHUB_ENV
           echo $HELM_VERSION_TO_INSTALL
 
-      - name: install helm
-        uses: azure/setup-helm@v3
+      - uses: azure/setup-helm@v3
         with:
           version: ${{ env.HELM_VERSION_TO_INSTALL }}
 
