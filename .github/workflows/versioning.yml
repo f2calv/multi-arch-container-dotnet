@@ -35,13 +35,13 @@ jobs:
           fi
 
       - name: gitversion (2 of 3)
-        uses: gittools/actions/gitversion/setup@v0
+        uses: gittools/actions/gitversion/setup@v1
         with:
           versionSpec: 5.x
 
       - name: gitversion (3 of 3)
         id: gitversion
-        uses: gittools/actions/gitversion/execute@v0
+        uses: gittools/actions/gitversion/execute@v1
         with:
           useConfigFile: true
           additionalArguments: /nofetch
