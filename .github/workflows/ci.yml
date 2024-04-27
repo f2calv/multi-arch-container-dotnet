@@ -18,6 +18,7 @@ on:
     branches: [main]
     types: [opened, synchronize, reopened]
 
+    
 jobs:
   versioning:
     uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
