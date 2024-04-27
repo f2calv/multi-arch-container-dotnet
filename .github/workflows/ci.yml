@@ -48,6 +48,8 @@ jobs:
     needs: [versioning, app, image, chart]
     if: github.ref == 'refs/heads/main'
     uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
+    permissions:
+      contents: write
     with:
       semVer: ${{ needs.versioning.outputs.semVer }}
       tag-prefix: ''
