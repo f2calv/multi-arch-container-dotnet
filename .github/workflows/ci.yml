@@ -25,6 +25,7 @@ jobs:
       tag-prefix: ''
       tag-and-release: false
 
+
   app:
     uses: ./.github/workflows/build-app.yml
     needs: versioning
