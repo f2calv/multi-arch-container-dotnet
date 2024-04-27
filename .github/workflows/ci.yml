@@ -20,7 +20,10 @@ on:
 
 jobs:
   versioning:
-    uses: ./.github/workflows/versioning.yml
+    uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
+    with:
+      tag-prefix: ''
+      tag-and-release: false
 
   app:
     uses: ./.github/workflows/build-app.yml
@@ -46,5 +49,6 @@ jobs:
     if: github.ref == 'refs/heads/main'
     uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
     with:
+      semVer: ${{ needs.versioning.outputs.semVer }}
       tag-prefix: ''
       move-major-tag: false
