@@ -26,19 +26,19 @@ jobs:
       tag-and-release: false
 
   app:
-    uses: ./.github/workflows/build-app.yml
+    uses: f2calv/gha-workflows/.github/workflows/app-build-dotnet.yml@v1
     needs: versioning
     with:
       fullSemVer: ${{ needs.versioning.outputs.fullSemVer }}
 
   image:
-    uses: ./.github/workflows/build-image.yml
+    uses: f2calv/gha-workflows/.github/workflows/container-image-build.yml@v1
     needs: [versioning, app]
     with:
       tag: ${{ needs.versioning.outputs.semVer }}
 
   chart:
-    uses: ./.github/workflows/build-chart.yml
+    uses: f2calv/gha-workflows/.github/workflows/helm-chart-build.yml@v1
     needs: [versioning, app, image]
     if: github.ref == 'refs/heads/main'
     with:
