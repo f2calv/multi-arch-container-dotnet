@@ -20,25 +20,25 @@ on:
 
 jobs:
   versioning:
-    uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@f2calv/2024-04-additions
+    uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
     with:
       tag-prefix: ''
       tag-and-release: false
 
   app:
-    uses: f2calv/gha-workflows/.github/workflows/app-build-dotnet.yml@f2calv/2024-04-additions
+    uses: f2calv/gha-workflows/.github/workflows/app-build-dotnet.yml@v1
     needs: versioning
     with:
       fullSemVer: ${{ needs.versioning.outputs.fullSemVer }}
 
   image:
-    uses: f2calv/gha-workflows/.github/workflows/container-image-build.yml@f2calv/2024-04-additions
+    uses: f2calv/gha-workflows/.github/workflows/container-image-build.yml@v1
     needs: [versioning, app]
     with:
       tag: ${{ needs.versioning.outputs.semVer }}
 
   chart:
-    uses: f2calv/gha-workflows/.github/workflows/helm-chart-build.yml@f2calv/2024-04-additions
+    uses: f2calv/gha-workflows/.github/workflows/helm-chart-build.yml@v1
     needs: [versioning, app, image]
     if: github.ref == 'refs/heads/main'
     with:
@@ -47,7 +47,7 @@ jobs:
   release:
     needs: [versioning, app, image, chart]
     if: github.ref == 'refs/heads/main'
-    uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@f2calv/2024-04-additions
+    uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
     permissions:
       contents: write
     with:
