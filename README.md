@@ -15,9 +15,13 @@ If you find this repository useful then give it a :star: ... :wink:
 ## Goals
 
 - Construct a .NET multi-architecture container image via a single Dockerfile using the `docker buildx` command.
-- Create GitHub Actions workflow to;
+- Create a single GitHub Actions workflow [ci.yml](.github/workflows/ci.yml) to handle all tasks and host the reuseable workflows in an external [gha-workflows](https://github.com/f2calv/gha-workflows) repository.
 
-  - Push finished multi-architecture container image to GitHub packages.
+  - Auto-Semantic Versioning
+  - Build App
+  - Build Container + Push To GitHub Packages
+  - Package Helm Chart + Push To GitHub Packages
+  - GitHub Release
 
 ## Runtime Identifiers
 
