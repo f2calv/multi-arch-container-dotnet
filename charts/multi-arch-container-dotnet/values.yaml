@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: multi-arch-container-dotnet
+  repository: ghcr.io/f2calv/multi-arch-container-dotnet
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
