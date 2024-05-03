@@ -38,7 +38,11 @@ RID is short for [Runtime Identifier](https://docs.microsoft.com/en-us/dotnet/co
 #Run pre-built image on Docker
 docker run --pull always --rm -it ghcr.io/f2calv/multi-arch-container-dotnet
 
-#Run pre-built image on Kubernetes
+#Run pre-built image on Kubernetes (via Helm)
+helm upgrade --install multi-arch-container-dotnet oci://ghcr.io/f2calv/charts/multi-arch-container-dotnet
+#helm uninstall multi-arch-container-dotnet
+
+#Run pre-built image on Kubernetes (via kubectl)
 kubectl run -i --tty --attach multi-arch-container-dotnet --image=ghcr.io/f2calv/multi-arch-container-dotnet --image-pull-policy='Always'
 kubectl logs -f multi-arch-container-dotnet
 #kubectl delete po multi-arch-container-dotnet
