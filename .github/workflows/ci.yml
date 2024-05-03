@@ -45,7 +45,7 @@ jobs:
     uses: f2calv/gha-workflows/.github/workflows/helm-chart-package.yml@f2calv/2024-04-updates5
     #needs: [versioning, app, image]
     needs: [versioning]
-    if: github.ref == 'refs/heads/main'
+    #if: github.ref == 'refs/heads/main'
     with:
       tag: ${{ needs.versioning.outputs.semVer }}
 
