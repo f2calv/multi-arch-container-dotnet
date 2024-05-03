@@ -9,7 +9,6 @@ on:
       # - .github
       # - .scripts
       # - .charts
-      - kustomize
       - LICENSE
       - README.md
       - build.sh
@@ -42,6 +41,9 @@ jobs:
 
   chart:
     uses: f2calv/gha-workflows/.github/workflows/helm-chart-package.yml@v1
+    permissions:
+      packages: write #for pushing helm artifact
+      contents: read #note: for private repos setting packages to write, will reset all other permissions to none (weird?)
     needs: [versioning, app, image]
     with:
       tag: ${{ needs.versioning.outputs.semVer }}
