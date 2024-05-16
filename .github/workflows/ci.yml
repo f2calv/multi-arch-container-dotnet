@@ -42,7 +42,8 @@ jobs:
       tag: ${{ needs.versioning.outputs.semVer }}
 
   chart:
-    uses: f2calv/gha-workflows/.github/workflows/helm-chart-package.yml@v1
+    #uses: f2calv/gha-workflows/.github/workflows/helm-chart-package.yml@v1
+    uses: f2calv/gha-workflows/.github/workflows/helm-chart-package.yml@f2calv/2024-05-cas-updates
     permissions:
       packages: write #for pushing helm artifact
       contents: read #note: for private repos setting packages to write, will reset all other permissions to none (weird?)
