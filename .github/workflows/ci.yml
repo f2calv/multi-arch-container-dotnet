@@ -48,6 +48,7 @@ jobs:
       contents: read #note: for private repos setting packages to write, will reset all other permissions to none (weird?)
     needs: [versioning, app, image]
     with:
+      registry: ghcr.io/${{ github.repository_owner }}
       tag: ${{ needs.versioning.outputs.semVer }}
 
   release:
