@@ -31,8 +31,7 @@ jobs:
       fullSemVer: ${{ needs.versioning.outputs.fullSemVer }}
 
   image:
-    #uses: f2calv/gha-workflows/.github/workflows/container-image-build.yml@v1
-    uses: f2calv/gha-workflows/.github/workflows/container-image-build.yml@f2calv/2024-05-cas-updates
+    uses: f2calv/gha-workflows/.github/workflows/container-image-build.yml@v1
     permissions:
       packages: write #for pushing container image
       contents: read #note: for private repos setting packages to write, will reset all other permissions to none (weird?)
@@ -42,14 +41,14 @@ jobs:
       tag: ${{ needs.versioning.outputs.semVer }}
 
   chart:
-    #uses: f2calv/gha-workflows/.github/workflows/helm-chart-package.yml@v1
-    uses: f2calv/gha-workflows/.github/workflows/helm-chart-package.yml@f2calv/2024-05-cas-updates
+    uses: f2calv/gha-workflows/.github/workflows/helm-chart-package.yml@v1
     permissions:
       packages: write #for pushing helm artifact
       contents: read #note: for private repos setting packages to write, will reset all other permissions to none (weird?)
     needs: [versioning, app, image]
     with:
       registry: ghcr.io/${{ github.repository_owner }}
+      chart-repository-prefix: charts/
       tag: ${{ needs.versioning.outputs.semVer }}
 
   release:
