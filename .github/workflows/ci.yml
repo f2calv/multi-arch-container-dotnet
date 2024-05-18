@@ -39,6 +39,8 @@ jobs:
     with:
       registry: ghcr.io/${{ github.repository_owner }}
       tag: ${{ needs.versioning.outputs.semVer }}
+      tag-major: ${{ needs.versioning.outputs.major }}
+      tag-minor: ${{ needs.versioning.outputs.minor }}
 
   chart:
     uses: f2calv/gha-workflows/.github/workflows/helm-chart-package.yml@v1
