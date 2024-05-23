@@ -23,7 +23,6 @@ docker buildx create --name multiarchcontainerdotnet --use
 #https://github.com/docker/buildx/blob/master/docs/reference/buildx_build.md
 docker buildx build `
     -t $IMAGE_NAME `
-    -t "$($GIT_REPO):latest" `
     --build-arg GIT_REPOSITORY=$GIT_REPOSITORY `
     --build-arg GIT_BRANCH=$GIT_BRANCH `
     --build-arg GIT_COMMIT=$GIT_COMMIT `
