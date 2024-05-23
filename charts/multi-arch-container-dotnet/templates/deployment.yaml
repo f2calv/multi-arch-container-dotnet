@@ -40,6 +40,21 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+          env:
+            - name: "GIT_REPOSITORY"
+              value: {{ .Values.git.repository | default "" | quote }}
+            - name: "GIT_BRANCH"
+              value: {{ .Values.git.branch | default "" | quote }}
+            - name: "GIT_COMMIT"
+              value: {{ .Values.git.commit | default "" | quote }}
+            - name: "GIT_TAG"
+              value: {{ .Values.image.tag | default .Chart.AppVersion }}
+            - name: "GITHUB_WORKFLOW"
+              value: {{ .Values.github.workflow | default "" | quote }}
+            - name: "GITHUB_RUN_ID"
+              value: {{ .Values.github.run_id | int64 | default 0 | quote }}
+            - name: "GITHUB_RUN_NUMBER"
+              value: {{ .Values.github.run_number | int64 | default 0 | quote }}
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
