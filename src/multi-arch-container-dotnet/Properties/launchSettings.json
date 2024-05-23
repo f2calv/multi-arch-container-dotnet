@@ -3,7 +3,7 @@
     "multi-arch-container-dotnet": {
       "commandName": "Project",
       "environmentVariables": {
-        "GIT_REPO": "multi-arch-container-dotnet"
+        "GIT_REPOSITORY": "multi-arch-container-dotnet"
       }
     }
   }
