@@ -72,7 +72,7 @@ First clone the repository (ideally by opening it as [vscode devcontainer](https
 #!/bin/sh
 
 #set variables to emulate running in the workflow/pipeline
-GIT_REPO=$(basename `git rev-parse --show-toplevel`)
+GIT_REPOSITORY=$(basename `git rev-parse --show-toplevel`)
 GIT_BRANCH=$(git branch --show-current)
 GIT_COMMIT=$(git rev-parse HEAD)
 GIT_TAG="latest-dev"
@@ -92,13 +92,13 @@ docker buildx create --name multiarchcontainerdotnet --use
 #https://github.com/docker/buildx/blob/master/docs/reference/buildx_build.md
 docker buildx build \
     -t $IMAGE_NAME \
-    -t "$GIT_REPO:latest" \
+    -t "$GIT_REPOSITORY:latest" \
     --label "GITHUB_RUN_ID=$GITHUB_RUN_ID" \
     --label "IMAGE_NAME=$IMAGE_NAME" \
-    --build-arg GIT_REPO=$GIT_REPO \
-    --build-arg GIT_TAG=$GIT_TAG \
+    --build-arg GIT_REPOSITORY=$GIT_REPOSITORY \
     --build-arg GIT_BRANCH=$GIT_BRANCH \
     --build-arg GIT_COMMIT=$GIT_COMMIT \
+    --build-arg GIT_TAG=$GIT_TAG \
     --build-arg GITHUB_WORKFLOW=$GITHUB_WORKFLOW \
     --build-arg GITHUB_RUN_ID=$GITHUB_RUN_ID \
     --build-arg GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER \
@@ -109,13 +109,13 @@ docker buildx build \
 
 #Preview matching images
 #https://docs.docker.com/engine/reference/commandline/images/
-docker images $GIT_REPO
+docker images $GIT_REPOSITORY
 
 read -p "Hit ENTER to run the '$IMAGE_NAME' image..."
 
 #Run the multi-architecture container image
 #https://docs.docker.com/engine/reference/commandline/run/
-docker run --rm -it --name $GIT_REPO $IMAGE_NAME
+docker run --rm -it --name $GIT_REPOSITORY $IMAGE_NAME
 
 #userprofile=$(wslpath "$(wslvar USERPROFILE)")
 #export KUBECONFIG=$userprofile/.kube/config
