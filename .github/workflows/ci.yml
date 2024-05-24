@@ -41,6 +41,7 @@ jobs:
       tag: ${{ needs.versioning.outputs.semVer }}
       tag-major: ${{ needs.versioning.outputs.major }}
       tag-minor: ${{ needs.versioning.outputs.minor }}
+      push-image: ${{ github.ref_name == github.event.repository.default_branch }}
 
   chart:
     uses: f2calv/gha-workflows/.github/workflows/helm-chart-package.yml@v1
@@ -52,6 +53,7 @@ jobs:
       registry: ghcr.io/${{ github.repository_owner }}
       chart-repository-prefix: charts/
       tag: ${{ needs.versioning.outputs.semVer }}
+      push-chart: ${{ github.ref_name == github.event.repository.default_branch }}
 
   release:
     needs: [versioning, app, image, chart]
