@@ -28,12 +28,16 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "multi-arch-container-dotnet.serviceAccountName" . }}
+      {{- if hasKey .Values "podSecurityContext" }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
+          {{- if hasKey .Values "securityContext" }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
@@ -41,26 +45,36 @@ spec:
               containerPort: {{ .Values.service.port }}
               protocol: TCP
           env:
+            {{- if hasKey .Values "git" }}
             - name: "GIT_REPOSITORY"
               value: {{ .Values.git.repository | default "" | quote }}
             - name: "GIT_BRANCH"
               value: {{ .Values.git.branch | default "" | quote }}
             - name: "GIT_COMMIT"
               value: {{ .Values.git.commit | default "" | quote }}
+            {{- end }}
             - name: "GIT_TAG"
               value: {{ .Values.image.tag | default .Chart.AppVersion }}
+            {{- if hasKey .Values "github" }}
             - name: "GITHUB_WORKFLOW"
               value: {{ .Values.github.workflow | default "" | quote }}
             - name: "GITHUB_RUN_ID"
               value: {{ .Values.github.run_id | int64 | default 0 | quote }}
             - name: "GITHUB_RUN_NUMBER"
               value: {{ .Values.github.run_number | int64 | default 0 | quote }}
+            {{- end }}
+          {{- if hasKey .Values "livenessProbe" }}
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if hasKey .Values "readinessProbe" }}
           readinessProbe:
             {{- toYaml .Values.readinessProbe | nindent 12 }}
+          {{- end }}
+          {{- if hasKey .Values "resources" }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          {{- end }}
           {{- with .Values.volumeMounts }}
           volumeMounts:
             {{- toYaml . | nindent 12 }}

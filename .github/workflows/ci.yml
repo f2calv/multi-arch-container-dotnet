@@ -54,6 +54,7 @@ jobs:
       chart-repository-prefix: charts/
       tag: ${{ needs.versioning.outputs.semVer }}
       push-chart: ${{ github.ref_name == github.event.repository.default_branch }}
+      chart-testing-cli-command: install
 
   release:
     needs: [versioning, app, image, chart]
