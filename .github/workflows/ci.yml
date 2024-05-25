@@ -44,8 +44,7 @@ jobs:
       push-image: ${{ github.ref_name == github.event.repository.default_branch }}
 
   chart:
-    #uses: f2calv/gha-workflows/.github/workflows/helm-chart-package.yml@v1
-    uses: f2calv/gha-workflows/.github/workflows/helm-chart-package.yml@f2calv/2024-05-helm-chart-tests
+    uses: f2calv/gha-workflows/.github/workflows/helm-chart-package.yml@v1
     permissions:
       packages: write #for pushing helm artifact
       contents: read #note: for private repos setting packages to write, will reset all other permissions to none (weird?)
