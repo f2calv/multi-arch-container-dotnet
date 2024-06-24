@@ -4,6 +4,5 @@
 !src/**/*.cs
 !**/*.csproj
 !**/*.sln
-!NuGet.config
 !global.json
 !Directory.build.props
