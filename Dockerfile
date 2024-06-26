@@ -14,7 +14,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
     fi \
     && dotnet publish "src/multi-arch-container-dotnet/multi-arch-container-dotnet.csproj" -c Release -o /app/publish -r $RID --self-contained false
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
