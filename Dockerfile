@@ -1,5 +1,5 @@
-#FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+#FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /repo
 COPY ["src/multi-arch-container-dotnet/multi-arch-container-dotnet.csproj", "src/multi-arch-container-dotnet/"]
 RUN dotnet restore "src/multi-arch-container-dotnet/multi-arch-container-dotnet.csproj"
@@ -14,7 +14,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
     fi \
     && dotnet publish "src/multi-arch-container-dotnet/multi-arch-container-dotnet.csproj" -c Release -o /app/publish -r $RID --self-contained false
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled AS final
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-noble-chiseled AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
