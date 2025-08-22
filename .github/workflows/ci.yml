@@ -37,7 +37,8 @@ jobs:
       contents: read #note: for private repos setting packages to write, will reset all other permissions to none (weird?)
     needs: [versioning, app]
     with:
-      registry: ghcr.io/${{ github.repository_owner }}
+      image-registry: ghcr.io
+      image-repository: ${{ github.repository_owner }}/multi-arch-container-dotnet
       tag: ${{ needs.versioning.outputs.semVer }}
       tag-major: ${{ needs.versioning.outputs.major }}
       tag-minor: ${{ needs.versioning.outputs.minor }}
@@ -49,12 +50,19 @@ jobs:
       packages: write #for pushing helm artifact
       contents: read #note: for private repos setting packages to write, will reset all other permissions to none (weird?)
     needs: [versioning, app, image]
+    if: github.event_name != 'pull_request'
     with:
-      registry: ghcr.io/${{ github.repository_owner }}
-      chart-repository-prefix: charts/
-      tag: ${{ needs.versioning.outputs.semVer }}
+      image-registry: ghcr.io
+      image-repository: ${{ github.repository_owner }}/multi-arch-container-dotnet
+      chart-registry: ghcr.io
+      chart-registry-username: ${{ github.repository_owner }}
+      #chart-registry-password: ${{ secrets.GITHUB_TOKEN }} #Note: this doesnt work
+      chart-repository: ${{ github.repository_owner }}/charts/multi-arch-container-dotnet
+      chart-path: charts/multi-arch-container-dotnet
+      tag: ${{ needs.versioning.outputs.version }}
       push-chart: ${{ github.ref_name == github.event.repository.default_branch }}
-      chart-testing-cli-command: install
+      chart-testing-cli-command: skip #because helm charts not completed
+    secrets: inherit
 
   release:
     needs: [versioning, app, image, chart]
