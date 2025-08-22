@@ -5,5 +5,5 @@
 !**/*.csproj
 !**/*.sln
 !global.json
-!Directory.build.props
-!Directory.packages.props
+!Directory.Build.props
+!Directory.Packages.props

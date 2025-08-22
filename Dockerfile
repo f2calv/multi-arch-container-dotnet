@@ -1,6 +1,6 @@
-#FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /repo
+COPY ["Directory.Build.props", "Directory.Packages.props", "./"]
 COPY ["src/multi-arch-container-dotnet/multi-arch-container-dotnet.csproj", "src/multi-arch-container-dotnet/"]
 RUN dotnet restore "src/multi-arch-container-dotnet/multi-arch-container-dotnet.csproj"
 COPY . .

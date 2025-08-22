@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using CasCap.Models;
+using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 using System.Runtime.InteropServices;
 
