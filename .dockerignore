@@ -6,3 +6,4 @@
 !**/*.sln
 !global.json
 !Directory.build.props
+!Directory.packages.props
