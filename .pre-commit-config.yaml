@@ -1,7 +1,6 @@
 exclude: |
   (?x)^(
     .devcontainer/devcontainer.json|
-    src/libs/SharedLibUI/.*|
     charts/.*
   )$
 repos:
