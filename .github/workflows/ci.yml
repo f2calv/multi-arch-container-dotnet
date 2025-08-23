@@ -18,6 +18,9 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
+  lint:
+    uses: f2calv/gha-workflows/.github/workflows/lint.yml@v1
+
   versioning:
     uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
     with:
@@ -50,7 +53,6 @@ jobs:
       packages: write #for pushing helm artifact
       contents: read #note: for private repos setting packages to write, will reset all other permissions to none (weird?)
     needs: [versioning, app, image]
-    if: github.event_name != 'pull_request'
     with:
       image-registry: ghcr.io
       image-repository: ${{ github.repository_owner }}/multi-arch-container-dotnet
