@@ -37,8 +37,8 @@ jobs:
       contents: read #note: for private repos setting packages to write, will reset all other permissions to none (weird?)
     needs: [versioning, app]
     with:
-      image-registry: ghcr.io
-      image-repository: ${{ github.repository_owner }}/multi-arch-container-dotnet
+      registry: ghcr.io
+      repository: ${{ github.repository_owner }}/multi-arch-container-dotnet
       tag: ${{ needs.versioning.outputs.semVer }}
       tag-major: ${{ needs.versioning.outputs.major }}
       tag-minor: ${{ needs.versioning.outputs.minor }}
