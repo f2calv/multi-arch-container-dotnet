@@ -14,7 +14,7 @@
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true' OR '$(TF_BUILD)' == 'true'">
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <!-- IDE1006 - suppress roslyn naming convention messages -->
     <!-- IDE0079 - Remove unnecessary suppression -->

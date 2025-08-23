@@ -58,9 +58,9 @@ First clone the repository (ideally by opening it as [vscode devcontainer](https
   #demo script PowerShell version
   ./build.ps1
   ```
-  
+
   Or
-  
+
   ```bash
   #demo script Shell version (also below)
   . build.sh
@@ -143,6 +143,6 @@ docker run --rm -it --name $GIT_REPOSITORY $IMAGE_NAME
   - https://docs.microsoft.com/en-us/azure/container-registry/push-multi-architecture-images
   - https://dotnet.microsoft.com/en-us/download/dotnet/7.0
 
- ## Further Resources
+## Further Resources
 
 - [Click here for Rust version of this repository...](https://github.com/f2calv/multi-arch-container-rust)
