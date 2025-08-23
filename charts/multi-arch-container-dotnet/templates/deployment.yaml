@@ -28,50 +28,47 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "multi-arch-container-dotnet.serviceAccountName" . }}
-      {{- if hasKey .Values "podSecurityContext" }}
+      {{- if and (hasKey .Values "podSecurityContext") (.Values.podSecurityContext) }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
-          {{- if hasKey .Values "securityContext" }}
+          {{- if and (hasKey .Values "securityContext") (.Values.securityContext) }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if and (hasKey .Values "service") (.Values.service) }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: {{ .Values.service.containerPort }}
               protocol: TCP
+          {{- end }}
+          {{- if or $.Values.env $.Values.envSecrets }}
           env:
-            {{- if hasKey .Values "git" }}
-            - name: "GIT_REPOSITORY"
-              value: {{ .Values.git.repository | default "" | quote }}
-            - name: "GIT_BRANCH"
-              value: {{ .Values.git.branch | default "" | quote }}
-            - name: "GIT_COMMIT"
-              value: {{ .Values.git.commit | default "" | quote }}
+            {{- range $key, $value := $.Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
             {{- end }}
-            - name: "GIT_TAG"
-              value: {{ .Values.image.tag | default .Chart.AppVersion }}
-            {{- if hasKey .Values "github" }}
-            - name: "GITHUB_WORKFLOW"
-              value: {{ .Values.github.workflow | default "" | quote }}
-            - name: "GITHUB_RUN_ID"
-              value: {{ .Values.github.run_id | int64 | default 0 | quote }}
-            - name: "GITHUB_RUN_NUMBER"
-              value: {{ .Values.github.run_number | int64 | default 0 | quote }}
+            {{- range $key, $secret := $.Values.envSecrets }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret }}
+                  key: {{ $key | quote }}
             {{- end }}
-          {{- if hasKey .Values "livenessProbe" }}
+          {{- end }}
+          {{- if and (hasKey .Values "livenessProbe") (.Values.livenessProbe) }}
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           {{- end }}
-          {{- if hasKey .Values "readinessProbe" }}
+          {{- if and (hasKey .Values "readinessProbe") (.Values.readinessProbe) }}
           readinessProbe:
             {{- toYaml .Values.readinessProbe | nindent 12 }}
           {{- end }}
-          {{- if hasKey .Values "resources" }}
+          {{- if and (hasKey .Values "resources") (.Values.resources) }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           {{- end }}

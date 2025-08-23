@@ -39,7 +39,7 @@ docker buildx build `
 #https://docs.docker.com/engine/reference/commandline/images/
 docker images $GIT_REPOSITORY
 
-Write-Host "Hit ENTER to run the '$IMAGE_NAME' image..." 
+Write-Host "Hit ENTER to run the '$IMAGE_NAME' image..."
 pause
 
 #Run the multi-architecture container image
