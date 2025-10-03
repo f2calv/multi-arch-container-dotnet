@@ -1,9 +1,11 @@
 <Solution>
-  <Folder Name="/Solution Items/">
+  <Folder Name="/multi-arch-container-dotnet/Solution Items/">
     <File Path=".dockerignore" />
     <File Path=".editorconfig" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
   </Folder>
-  <Project Path="src/multi-arch-container-dotnet/multi-arch-container-dotnet.csproj" />
+  <Folder Name="/multi-arch-container-dotnet/">
+    <Project Path="src/multi-arch-container-dotnet/multi-arch-container-dotnet.csproj" />
+  </Folder>
 </Solution>
