@@ -1,9 +1,10 @@
 # first ignore everything
 *
+
 # explictly add exceptions for required files/paths
 !src/**/*.cs
 !**/*.csproj
-!**/*.sln
+!**/appsettings.*
 !global.json
 !Directory.Build.props
 !Directory.Packages.props
