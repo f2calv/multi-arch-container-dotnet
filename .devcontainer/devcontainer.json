@@ -10,7 +10,7 @@
         "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
         "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
             "version": "latest",
-            "helm": "3.9.2",
+            "helm": "3.19.0",
             "minikube": "none"
         },
         "ghcr.io/eitsupi/devcontainer-features/jq-likes:2": {
