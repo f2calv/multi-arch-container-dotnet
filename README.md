@@ -2,7 +2,7 @@
 
 ## Introduction
 
-I've been developing a service orientated smart home system which consists of a number of containerised workloads running on an edge Kubernetes cluster (via [Microk8s](https://github.com/canonical/microk8s)), the "cluster" comprises two Raspberry Pi 4b (ARMv8).
+I've been developing a service orientated smart home system which consists of a number of containerised workloads running on an edge Kubernetes cluster (via [Microk8s](https://github.com/canonical/microk8s)), the "cluster" itself is a sole Raspberry Pi 4b (ARMv8).
 
 As well as running multiple workloads on the Pi 4b I also run workloads on another Raspberry Pi 2b (ARMv7) which is much older (but very power efficient). And finally I also need to run general tests of the workloads on my local Windows development machine prior to deployment to my "Production cluster", and at a later date I may even want to run these workloads on [Azure Kubernetes Service](https://azure.microsoft.com/en-us/products/kubernetes-service/).
 
@@ -69,7 +69,7 @@ First clone the repository (ideally by opening it as [vscode devcontainer](https
 ### Shell Demo Script
 
 ```bash
-#!/bin/sh
+#!/usr/bin/env bash
 
 #set variables to emulate running in the workflow/pipeline
 GIT_REPOSITORY=$(basename `git rev-parse --show-toplevel`)
@@ -79,7 +79,7 @@ GIT_TAG="latest-dev"
 GITHUB_WORKFLOW="n/a"
 GITHUB_RUN_ID=0
 GITHUB_RUN_NUMBER=0
-IMAGE_NAME="$GIT_REPO:$GIT_TAG"
+IMAGE_NAME="$GIT_REPOSITORY:$GIT_TAG"
 #Note: you cannot export a buildx container image into a local docker instance with multiple architecture manifests so for local testing you have to select just a single architecture.
 #$PLATFORM="linux/amd64,linux/arm64,linux/arm/v7"
 PLATFORM="linux/amd64"
@@ -115,10 +115,6 @@ read -p "Hit ENTER to run the '$IMAGE_NAME' image..."
 #Run the multi-architecture container image
 #https://docs.docker.com/engine/reference/commandline/run/
 docker run --rm -it --name $GIT_REPOSITORY $IMAGE_NAME
-
-#userprofile=$(wslpath "$(wslvar USERPROFILE)")
-#export KUBECONFIG=$userprofile/.kube/config
-#kubectl run -i --tty --attach multi-arch-container-dotnet --image=ghcr.io/f2calv/multi-arch-container-dotnet --image-pull-policy='Always'
 ```
 
 ## Docker, Container & .NET Resources
@@ -141,8 +137,8 @@ docker run --rm -it --name $GIT_REPOSITORY $IMAGE_NAME
   - https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-build
   - https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
   - https://docs.microsoft.com/en-us/azure/container-registry/push-multi-architecture-images
-  - https://dotnet.microsoft.com/en-us/download/dotnet/7.0
+  - https://dotnet.microsoft.com/en-us/download/dotnet/10.0
 
-## Further Resources
+## Other Resources
 
 - [Click here for Rust version of this repository...](https://github.com/f2calv/multi-arch-container-rust)
