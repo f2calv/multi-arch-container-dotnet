@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 #set variables to emulate running in the workflow/pipeline
 GIT_REPOSITORY=$(basename `git rev-parse --show-toplevel`)
