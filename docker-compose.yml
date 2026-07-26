@@ -1,0 +1,74 @@
+# Builds and runs all three sibling multi-arch-container images side by side, so that
+# configuration, environment variables and structured log output can be compared directly.
+#
+# This file lives ONLY in the .NET repository and expects the siblings to be cloned alongside it:
+#
+#   source/github/
+#   ├── multi-arch-container-dotnet/   <- you are here
+#   ├── multi-arch-container-go/
+#   └── multi-arch-container-rust/
+#
+# Usage:
+#   docker compose up --build                        # build all three in parallel, then run
+#   docker compose up --build --force-recreate       # ignore cached containers
+#   docker compose logs -f rust                      # follow a single service
+#   docker compose down                              # stop and remove
+#
+# Compose builds services in parallel by default. Add --parallel 1 to serialise for readable output.
+name: multi-arch-container
+
+# ── Build provenance ──────────────────────────────────────────────────────────
+# Passed as build ARGs, exactly as .github/workflows/ci.yml does, so they are baked into the
+# image by the ARG/ENV block of each Dockerfile. Because they are baked at BUILD time, changing
+# one requires a rebuild - `docker compose up` alone reuses the existing image, e.g.
+#   GIT_COMMIT=$(git rev-parse HEAD) docker compose up --build
+x-provenance: &provenance
+  GIT_REPOSITORY: ${GIT_REPOSITORY:-f2calv/multi-arch-container}
+  GIT_BRANCH: ${GIT_BRANCH:-refs/heads/local}
+  GIT_COMMIT: ${GIT_COMMIT:-0000000000000000000000000000000000000000}
+  GIT_TAG: ${GIT_TAG:-latest-dev}
+  GITHUB_WORKFLOW: ${GITHUB_WORKFLOW:-docker-compose}
+  GITHUB_RUN_ID: ${GITHUB_RUN_ID:-0}
+  GITHUB_RUN_NUMBER: ${GITHUB_RUN_NUMBER:-0}
+
+# ── Application configuration ─────────────────────────────────────────────────
+# Passed as runtime environment variables. All three applications resolve these identically:
+# the `app` section of appsettings.json, overridden by APP__<KEY> from the environment.
+x-app-config: &app-config
+  APP__GREETING: ${APP__GREETING:-Hello from a multi-architecture container}
+  APP__INTERVAL_SECONDS: ${APP__INTERVAL_SECONDS:-3}
+  APP__LOG_FORMAT: ${APP__LOG_FORMAT:-text}
+
+services:
+  dotnet:
+    image: multi-arch-container-dotnet:compose
+    build:
+      context: .
+      args: *provenance
+    environment:
+      <<: *app-config
+      # Serilog reads its own minimum level from configuration.
+      SERILOG__MINIMUMLEVEL__DEFAULT: ${LOG_LEVEL:-Information}
+    restart: "no"
+
+  go:
+    image: multi-arch-container-go:compose
+    build:
+      context: ../multi-arch-container-go
+      args: *provenance
+    environment:
+      <<: *app-config
+      # slog reads its level from LOG_LEVEL (debug|info|warn|error).
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    restart: "no"
+
+  rust:
+    image: multi-arch-container-rust:compose
+    build:
+      context: ../multi-arch-container-rust
+      args: *provenance
+    environment:
+      <<: *app-config
+      # tracing-subscriber reads its level from RUST_LOG (EnvFilter syntax).
+      RUST_LOG: ${LOG_LEVEL:-info}
+    restart: "no"

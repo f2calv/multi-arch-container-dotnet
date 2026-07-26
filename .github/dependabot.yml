@@ -13,12 +13,15 @@ updates:
       interval: weekly
       time: "04:00"
 
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      time: "04:00"
+
   - package-ecosystem: nuget
     directory: /
     schedule:
       interval: weekly
       time: "04:00"
     open-pull-requests-limit: 10
-    ignore:
-    - dependency-name: Serilog.AspNetCore
-    - dependency-name: Serilog.Enrichers.Environment

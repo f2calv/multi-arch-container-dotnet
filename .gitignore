@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# VS Code (share the recommended extension list, ignore everything else)
+.vscode/*
+!.vscode/extensions.json
+
 # User-specific files
 *.rsuser
 *.suo

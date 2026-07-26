@@ -6,32 +6,38 @@ on:
     branches-ignore:
       - "preview/**"
     paths-ignore:
-      # - .github
-      # - .scripts
-      # - .charts
+      - .github/copilot-instructions.md
+      - .github/dependabot.yml
+      - .github/instructions/**
       - LICENSE
       - README.md
-      - build.sh
-      - build.ps1
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
 
+permissions: {} #Note: deny all permissions at the workflow level; individual jobs declare only what they need (principle of least privilege)
+
 jobs:
   lint:
     uses: f2calv/gha-workflows/.github/workflows/lint.yml@v1
+    permissions:
+      contents: read
 
   versioning:
     uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
+    permissions:
+      contents: read
     with:
       tag-prefix: ''
       tag-and-release: false
 
   app:
     uses: f2calv/gha-workflows/.github/workflows/app-build-dotnet.yml@v1
+    permissions:
+      contents: read
     needs: versioning
     with:
-      fullSemVer: ${{ needs.versioning.outputs.fullSemVer }}
+      version: ${{ needs.versioning.outputs.version }}
 
   image:
     uses: f2calv/gha-workflows/.github/workflows/container-image-build.yml@v1
@@ -40,39 +46,20 @@ jobs:
       contents: read #note: for private repos setting packages to write, will reset all other permissions to none (weird?)
     needs: [versioning, app]
     with:
-      registry: ghcr.io
-      repository: ${{ github.repository_owner }}/multi-arch-container-dotnet
-      tag: ${{ needs.versioning.outputs.semVer }}
+      registry: ghcr.io/${{ github.repository_owner }}
+      tag: ${{ needs.versioning.outputs.version }}
       tag-major: ${{ needs.versioning.outputs.major }}
       tag-minor: ${{ needs.versioning.outputs.minor }}
+      platform: linux/amd64,linux/arm64,linux/arm/v7
       push-image: ${{ github.ref_name == github.event.repository.default_branch }}
 
-  chart:
-    uses: f2calv/gha-workflows/.github/workflows/helm-chart-package.yml@v1
-    permissions:
-      packages: write #for pushing helm artifact
-      contents: read #note: for private repos setting packages to write, will reset all other permissions to none (weird?)
-    needs: [versioning, app, image]
-    with:
-      image-registry: ghcr.io
-      image-repository: ${{ github.repository_owner }}/multi-arch-container-dotnet
-      chart-registry: ghcr.io
-      chart-registry-username: ${{ github.repository_owner }}
-      #chart-registry-password: ${{ secrets.GITHUB_TOKEN }} #Note: this doesnt work
-      chart-repository: ${{ github.repository_owner }}/charts/multi-arch-container-dotnet
-      chart-path: charts/multi-arch-container-dotnet
-      tag: ${{ needs.versioning.outputs.semVer }}
-      push-chart: ${{ github.ref_name == github.event.repository.default_branch }}
-      chart-testing-cli-command: skip #because helm charts not completed
-    secrets: inherit
-
   release:
-    needs: [versioning, app, image, chart]
-    if: github.ref == 'refs/heads/main'
+    needs: [lint, versioning, app, image]
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
     permissions:
       contents: write
     with:
-      semVer: ${{ needs.versioning.outputs.semVer }}
+      semVer: ${{ needs.versioning.outputs.version }}
       tag-prefix: ''
       move-major-tag: false
