@@ -1,9 +1,5 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/dotnet
-//
-// Note: the devcontainer is optional here - the .NET SDK installs cleanly on Windows/macOS/Linux,
-// so it is provided for consumers who would rather not install it. The sibling Go and Rust
-// repositories carry an equivalent devcontainer.
 {
     "name": "C# (.NET)",
     "image": "mcr.microsoft.com/devcontainers/dotnet:latest",

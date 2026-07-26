@@ -87,6 +87,10 @@ Their premise is that a developer fluent in one language can learn another langu
 
 These repositories are **application code only**. Kubernetes packaging lives in the standalone [f2calv/helm-charts](https://github.com/f2calv/helm-charts) repository, which provides a single multi-purpose chart used by all deployments. Do not reintroduce a `charts/` directory or a `chart` job in `ci.yml`.
 
+### Linting is manual, never an auto-installed git hook
+
+Do **not** wire `pre-commit install` into `.devcontainer/postCreateCommand.sh`, `postStartCommand.sh` or the README. The hook cost is fixed interpreter start-up per hook rather than per file, so a one-file commit pays the same price as a full run — noticeable on slower hardware. Linting is run manually with `pre-commit run --all-files`, and the `lint` job in `ci.yml` is the authoritative gate. A once-per-push hook (`pre-commit install --hook-type pre-push`) is an acceptable opt-in, never a default.
+
 ### Cross-Repository docker-compose
 
 [`docker-compose.yml`](../docker-compose.yml) lives **only in this repository** and builds/runs all three sibling images together, so environment-variable and configuration behaviour can be compared side by side. It expects the sibling repositories to be cloned alongside this one:
