@@ -1,0 +1,28 @@
+name: package-cleanup
+
+on:
+#   schedule:
+#     - cron: 0 3 * * 0 #Note: weekly, Sunday 03:00 UTC
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        type: boolean
+        description: Log everything that would be deleted without making changes.
+        default: true
+
+permissions: {}
+
+jobs:
+  cleanup:
+    uses: f2calv/gha-workflows/.github/workflows/package-cleanup.yml@v1
+    permissions:
+      packages: write
+    with:
+      packages: cas,cas/charts/monolith,cas/charts/cascap
+      older-than: 3 weeks #Note: only purge images older than this
+      keep-n-tagged: 5 #Note: safety floor — always retain the 5 newest tagged images for rollback, even if older than 3 weeks
+      exclude-tags: latest,latest-dev
+      #Note: dry-run stays on for scheduled runs until validated — change the
+      #expression below to `${{ github.event_name == 'workflow_dispatch' && inputs.dry-run }}`
+      #(or simply `false`) to enable live pruning on the weekly schedule.
+      dry-run: ${{ github.event_name != 'workflow_dispatch' || inputs.dry-run }}
