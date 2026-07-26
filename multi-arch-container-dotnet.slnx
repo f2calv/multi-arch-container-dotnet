@@ -2,12 +2,14 @@
   <Folder Name="/multi-arch-container-dotnet/Solution Items/">
     <File Path=".dockerignore" />
     <File Path=".editorconfig" />
+    <File Path=".pre-commit-config.yaml" />
     <File Path="build.ps1" />
     <File Path="build.sh" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
+    <File Path="docker-compose.yml" />
     <File Path="Dockerfile" />
-    <File Path="Dockerfile.singlearch" />
+    <File Path="GitVersion.yml" />
     <File Path="README.md" />
   </Folder>
   <Folder Name="/multi-arch-container-dotnet/">

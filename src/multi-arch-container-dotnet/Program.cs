@@ -1,27 +1,48 @@
-﻿using CasCap.Models;
-using Serilog;
+﻿using Serilog;
+using Serilog.Formatting.Json;
 using Serilog.Sinks.SystemConsole.Themes;
-using System.Runtime.InteropServices;
 
-var loggerConfiguration = new LoggerConfiguration();
+//1) Configuration sources, in ascending order of precedence:
+//     appsettings.json -> appsettings.{Environment}.json -> environment variables -> command line.
+//   Host.CreateApplicationBuilder wires all four up for us.
+var builder = Host.CreateApplicationBuilder(args);
 
-loggerConfiguration.WriteTo.Console(theme: AnsiConsoleTheme.Code, applyThemeToRedirectedOutput: true);
-Log.Logger = loggerConfiguration
-    .Enrich.FromLogContext()
-    .Enrich.WithMachineName()
-    .CreateLogger();
+//2) Strongly-typed, validated configuration.
+//   AppConfig binds the hierarchical "App" section - override any value with the standard
+//   double-underscore syntax, e.g. App__IntervalSeconds=10.
+//   BuildInfo binds the flat, unprefixed provenance variables baked into the image (GIT_TAG etc).
+builder.Services.AddOptions<AppConfig>()
+    .Bind(builder.Configuration.GetSection(AppConfig.SectionKey))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
-var appSettings = new AppSettings();
-while (true)
+builder.Services.AddOptions<BuildInfo>()
+    .Bind(builder.Configuration);
+
+//3) Structured logging. Serilog owns the Microsoft.Extensions.Logging pipeline, so application
+//   code only ever depends on ILogger<T> - swapping Serilog out would not touch a single service.
+//   Minimum levels and overrides are read from the "Serilog" section of appsettings.json.
+var logFormat = builder.Configuration.GetValue(AppConfig.LogFormatKey, LogFormat.Text);
+
+builder.Services.AddSerilog((services, loggerConfig) =>
 {
-    Log.Information("App '{AppName}' on [Process Architecture: {ProcessArchitecture}, OSArchitecture: {OSArchitecture}, OSDescription: {OSDescription}].",
-        AppDomain.CurrentDomain.FriendlyName, RuntimeInformation.ProcessArchitecture, RuntimeInformation.OSArchitecture, RuntimeInformation.OSDescription);
+    loggerConfig
+        .ReadFrom.Configuration(builder.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .Enrich.WithMachineName();
 
-    Log.Information("Git information; name '{GIT_REPOSITORY}', branch '{GIT_BRANCH}', commit '{GIT_COMMIT}', tag '{GIT_TAG}'",
-        appSettings.GIT_REPOSITORY, appSettings.GIT_BRANCH, appSettings.GIT_COMMIT, appSettings.GIT_TAG);
+    if (logFormat == LogFormat.Json)
+        loggerConfig.WriteTo.Console(new JsonFormatter());
+    else
+        loggerConfig.WriteTo.Console(theme: AnsiConsoleTheme.Code, applyThemeToRedirectedOutput: true);
+});
 
-    Log.Information("GitHub information; workflow '{GITHUB_WORKFLOW}', run id '{GITHUB_RUN_ID}', run number '{GITHUB_RUN_NUMBER}'",
-        appSettings.GITHUB_WORKFLOW, appSettings.GITHUB_RUN_ID, appSettings.GITHUB_RUN_NUMBER);
+//4) TimeProvider keeps the worker's delays deterministic and testable.
+builder.Services.AddSingleton(TimeProvider.System);
 
-    await Task.Delay(3_000, cancellationToken: CancellationToken.None);
-}
+//5) The worker itself. The host traps SIGINT/SIGTERM and cancels the stopping token, so both
+//   `docker stop` and `kubectl delete pod` shut the application down cleanly.
+builder.Services.AddHostedService<WorkerService>();
+
+await builder.Build().RunAsync();

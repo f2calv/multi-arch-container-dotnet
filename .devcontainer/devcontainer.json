@@ -1,8 +1,11 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/dotnet
+//
+// Note: the devcontainer is optional here - the .NET SDK installs cleanly on Windows/macOS/Linux,
+// so it is provided for consumers who would rather not install it. The sibling Go and Rust
+// repositories carry an equivalent devcontainer.
 {
     "name": "C# (.NET)",
-    // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
     "image": "mcr.microsoft.com/devcontainers/dotnet:latest",
     // Features to add to the dev container. More info: https://containers.dev/features.
     "features": {
@@ -10,7 +13,7 @@
         "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
         "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
             "version": "latest",
-            "helm": "3.19.0",
+            "helm": "none",
             "minikube": "none"
         },
         "ghcr.io/eitsupi/devcontainer-features/jq-likes:2": {
@@ -18,38 +21,30 @@
             "yqVersion": "latest"
         }
     },
-    // Use 'forwardPorts' to make a list of ports inside the container available locally.
-    // "forwardPorts": [5000, 5001],
-    // "portsAttributes": {
-    //		"5001": {
-    //			"protocol": "https"
-    //		}
-    // }
-    // Use 'postCreateCommand' to run commands after the container is created.
     "postCreateCommand": "sh . ./.devcontainer/postCreateCommand.sh",
     "postStartCommand": "sh . ./.devcontainer/postStartCommand.sh",
-    // Configure tool-specific properties.
     "customizations": {
-        // Configure properties specific to VS Code.
         "vscode": {
-            // Set *default* container specific settings.json values on container create.
             "settings": {},
-            // Add the IDs of extensions you want installed when the container is created.
             "extensions": [
-                "ms-vscode.powershell",
-                "ms-vscode.azurecli",
-                "ms-azuretools.vscode-docker",
+                // Common to every multi-arch-container-* repository
+                "editorconfig.editorconfig",
+                "ms-azuretools.vscode-containers",
                 "ms-vscode-remote.vscode-remote-extensionpack",
-                "mutantdino.resourcemonitor",
-                "usernamehw.errorlens",
                 "davidanson.vscode-markdownlint",
-                "ms-dotnettools.csharp"
+                "redhat.vscode-yaml",
+                "usernamehw.errorlens",
+                "eamodio.gitlens",
+                "mutantdino.resourcemonitor",
+                // Language specific
+                "ms-dotnettools.csharp",
+                "ms-vscode.powershell"
             ]
         }
     },
     "mounts": [
         "source=${localEnv:HOME}${localEnv:USERPROFILE}/source/github,target=/workspaces,type=bind,consistency=cached",
-        "source=${env:HOME}${env:USERPROFILE}/.kube,target=/home/vscode/.kube,type=bind"
+        "source=${localEnv:HOME}${localEnv:USERPROFILE}/.kube,target=/home/vscode/.kube,type=bind"
     ]
     // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
     // "remoteUser": "root"

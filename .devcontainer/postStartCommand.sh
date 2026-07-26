@@ -7,6 +7,6 @@ sudo apt-get update
 sudo apt-get upgrade -y
 
 dotnet --version
-pre-commit autoupdate
+kubectl version --client --output=yaml | head -2
 
 echo "Done"

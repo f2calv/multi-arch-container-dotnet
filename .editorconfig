@@ -1,6 +1,25 @@
 # Remove the line below if you want to inherit .editorconfig settings from higher directories
 root = true
 
+#### Common to every file (kept identical across the sibling multi-arch-container-* repositories) ####
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{yml,yaml,json,json5}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[Makefile]
+indent_style = tab
+
 # C# files
 [*.cs]
 

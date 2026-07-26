@@ -18,7 +18,7 @@ jobs:
     permissions:
       packages: write
     with:
-      packages: cas,cas/charts/monolith,cas/charts/cascap
+      packages: multi-arch-container-dotnet
       older-than: 3 weeks #Note: only purge images older than this
       keep-n-tagged: 5 #Note: safety floor — always retain the 5 newest tagged images for rollback, even if older than 3 weeks
       exclude-tags: latest,latest-dev

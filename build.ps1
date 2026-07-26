@@ -1,28 +1,41 @@
+#
+# Local equivalent of the `image` job in .github/workflows/ci.yml.
+# This file is byte-identical across the sibling multi-arch-container-* repositories -
+# every value it needs is derived from git rather than hard-coded.
+#
 Set-StrictMode -Version 3.0
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
 
-#set variables to emulate running in the workflow/pipeline
-$REPO_ROOT = git rev-parse --show-toplevel
-$GIT_REPOSITORY = $REPO_ROOT | Split-Path -Leaf
-$GIT_BRANCH = $(git branch --show-current)
-$GIT_COMMIT = $(git rev-parse HEAD)
-$GIT_TAG = "latest-dev"
-$GITHUB_WORKFLOW = "n/a"
+#Emulate the variables that the CI workflow injects into the build
+$GIT_REPOSITORY = (git rev-parse --show-toplevel) | Split-Path -Leaf
+$GIT_BRANCH = git branch --show-current
+$GIT_COMMIT = git rev-parse HEAD
+$GIT_TAG = 'latest-dev'
+$GITHUB_WORKFLOW = 'n/a'
 $GITHUB_RUN_ID = 0
 $GITHUB_RUN_NUMBER = 0
-$IMAGE_NAME = "$($GIT_REPOSITORY):$($GIT_TAG)"
-#Note: you cannot export a buildx container image into a local docker instance with multiple architecture manifests so for local testing you have to select just a single architecture.
-#$PLATFORM = "linux/amd64,linux/arm64,linux/arm/v7"
-$PLATFORM = "linux/amd64"
 
-#Create a new builder instance
-#https://github.com/docker/buildx/blob/master/docs/reference/buildx_create.md
-docker buildx create --name multiarchcontainerdotnet --use
+$IMAGE_NAME = "$($GIT_REPOSITORY):$($GIT_TAG)"
+$BUILDER = $GIT_REPOSITORY -replace '-', ''
+
+#Note: a multi-platform image cannot be loaded into the local docker image store, so a
+#      local build targets a single platform. To exercise all three architectures run:
+#        $env:PLATFORM='linux/amd64,linux/arm64,linux/arm/v7'; $env:OUTPUT='--push'; ./build.ps1
+$PLATFORM = if ($env:PLATFORM) { $env:PLATFORM } else { 'linux/amd64' }
+$OUTPUT = if ($env:OUTPUT) { $env:OUTPUT } else { '--load' }
+
+#Create (or reuse) a builder instance capable of multi-platform builds
+#https://docs.docker.com/reference/cli/docker/buildx/create/
+docker buildx inspect $BUILDER *> $null
+if ($LASTEXITCODE -ne 0) { docker buildx create --name $BUILDER --bootstrap }
+docker buildx use $BUILDER
 
 #Start a build
-#https://github.com/docker/buildx/blob/master/docs/reference/buildx_build.md
+#https://docs.docker.com/reference/cli/docker/buildx/build/
 docker buildx build `
     -t $IMAGE_NAME `
+    --label "GITHUB_RUN_ID=$GITHUB_RUN_ID" `
+    --label "IMAGE_NAME=$IMAGE_NAME" `
     --build-arg GIT_REPOSITORY=$GIT_REPOSITORY `
     --build-arg GIT_BRANCH=$GIT_BRANCH `
     --build-arg GIT_COMMIT=$GIT_COMMIT `
@@ -32,18 +45,16 @@ docker buildx build `
     --build-arg GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER `
     --platform $PLATFORM `
     --pull `
-    -o type=docker `
+    $OUTPUT `
     .
 
 #Preview matching images
-#https://docs.docker.com/engine/reference/commandline/images/
+#https://docs.docker.com/reference/cli/docker/image/ls/
 docker images $GIT_REPOSITORY
 
-Write-Host "Hit ENTER to run the '$IMAGE_NAME' image..."
+Write-Host "Hit ENTER to run the '$IMAGE_NAME' image (Ctrl-C to quit)..."
 pause
 
-#Run the multi-architecture container image
-#https://docs.docker.com/engine/reference/commandline/run/
+#Run the container image, Ctrl-C shuts it down cleanly
+#https://docs.docker.com/reference/cli/docker/container/run/
 docker run --rm -it --name $GIT_REPOSITORY $IMAGE_NAME
-
-#kubectl run -i --tty --attach multi-arch-container-dotnet --image=ghcr.io/f2calv/multi-arch-container-dotnet --image-pull-policy='Always'

@@ -1,10 +1,11 @@
-# first ignore everything
+# Deny everything, then explicitly allow only what the build needs. Keeping the
+# build context minimal speeds up `docker build` and stops unrelated file edits
+# (docs, charts, IDE state, .git) from invalidating cached layers.
 *
 
-# explicitly add exceptions for required files/paths
-!src/**/*.cs
-!**/*.csproj
-!**/appsettings.*
-!global.json
 !Directory.Build.props
 !Directory.Packages.props
+!global.json
+!src/**/*.csproj
+!src/**/*.cs
+!src/**/appsettings*.json

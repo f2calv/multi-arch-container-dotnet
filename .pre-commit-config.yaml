@@ -1,8 +1,7 @@
 exclude: |
   (?x)^(
     .editorconfig|
-    .devcontainer/devcontainer.json|
-    charts/.*
+    .devcontainer/devcontainer.json
   )$
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -15,22 +14,12 @@ repos:
   #- id: pretty-format-json
   #  args: ["--indent", "2", "--autofix", "--no-sort-keys"]
   - id: check-added-large-files
-    args: [--maxkb=50]
+    args: [--maxkb=100]
+  - id: check-merge-conflict
+  - id: mixed-line-ending
+    args: [--fix=lf]
   - id: end-of-file-fixer
   - id: trailing-whitespace
-  - id: double-quote-string-fixer
-  # - id: terraform-fmt
-  #   name: terraform fmt
-  #   description: runs terraform fmt
-  #   entry: terraform fmt -recursive
-  #   language: system
-  #   pass_filenames: false
-  # - id: terraform-docs
-  #   name: terraform-docs
-  #   description: runs terraform-docs
-  #   entry: terraform-docs -c "./.terraform-docs.yml" "./"
-  #   language: system
-  #   pass_filenames: false
 - repo: https://gitlab.com/bmares/check-json5
   rev: v1.0.0
   hooks:
