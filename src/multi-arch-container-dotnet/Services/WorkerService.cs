@@ -23,8 +23,9 @@ public sealed class WorkerService(
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            logger.LogInformation("{ClassName} {Greeting} ProcessArchitecture={ProcessArchitecture} OSArchitecture={OSArchitecture} OSDescription={OSDescription} FrameworkDescription={FrameworkDescription}",
-                nameof(WorkerService), appConfig.Value.Greeting, RuntimeInformation.ProcessArchitecture, RuntimeInformation.OSArchitecture,
+            logger.LogInformation("{ClassName} {Greeting} AppName={AppName} ProcessArchitecture={ProcessArchitecture} OSArchitecture={OSArchitecture} OSDescription={OSDescription} FrameworkDescription={FrameworkDescription}",
+                nameof(WorkerService), appConfig.Value.Greeting, AppDomain.CurrentDomain.FriendlyName,
+                RuntimeInformation.ProcessArchitecture, RuntimeInformation.OSArchitecture,
                 RuntimeInformation.OSDescription, RuntimeInformation.FrameworkDescription);
 
             logger.LogInformation("{ClassName} git provenance, Repository={GitRepository} Branch={GitBranch} Commit={GitCommit} Tag={GitTag}",

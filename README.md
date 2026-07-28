@@ -229,23 +229,23 @@ flowchart LR
 
 - I highly recommend reading the official Docker blog posts about multi-arch images;
 
-  - https://www.docker.com/blog/multi-arch-images/
-  - https://www.docker.com/blog/multi-arch-build-and-images-the-simple-way/
-  - https://www.docker.com/blog/faster-multi-platform-builds-dockerfile-cross-compilation-guide/
+  - <https://www.docker.com/blog/multi-arch-images/>
+  - <https://www.docker.com/blog/multi-arch-build-and-images-the-simple-way/>
+  - <https://www.docker.com/blog/faster-multi-platform-builds-dockerfile-cross-compilation-guide/>
 
 - Official Docker documentation about support/implementation for multi-arch images;
 
-  - https://docs.docker.com/build/building/multi-platform/
-  - https://docs.docker.com/build/builders/
-  - https://docs.docker.com/reference/cli/docker/buildx/build/
-  - https://docs.docker.com/build/cache/optimize/
+  - <https://docs.docker.com/build/building/multi-platform/>
+  - <https://docs.docker.com/build/builders/>
+  - <https://docs.docker.com/reference/cli/docker/buildx/build/>
+  - <https://docs.docker.com/build/cache/optimize/>
 
 - Official Microsoft documentation useful for multi-arch .NET application builds;
 
-  - https://learn.microsoft.com/dotnet/core/rid-catalog
-  - https://learn.microsoft.com/dotnet/core/tools/dotnet-publish
-  - https://learn.microsoft.com/dotnet/core/docker/container-images
-  - https://learn.microsoft.com/dotnet/core/extensions/configuration
+  - <https://learn.microsoft.com/dotnet/core/rid-catalog>
+  - <https://learn.microsoft.com/dotnet/core/tools/dotnet-publish>
+  - <https://learn.microsoft.com/dotnet/core/docker/container-images>
+  - <https://learn.microsoft.com/dotnet/core/extensions/configuration>
 
 ## Further Resources
 
