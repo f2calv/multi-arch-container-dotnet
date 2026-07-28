@@ -45,4 +45,8 @@ builder.Services.AddSingleton(TimeProvider.System);
 //   `docker stop` and `kubectl delete pod` shut the application down cleanly.
 builder.Services.AddHostedService<WorkerService>();
 
-await builder.Build().RunAsync();
+var host = builder.Build();
+
+host.Services.GetRequiredService<ILogger<Program>>().LogInformation("Hit Ctrl-C to exit....");
+
+await host.RunAsync();
