@@ -24,6 +24,20 @@ applyTo: '.github/workflows/**,.github/actions/**,**/action.yml,**/action.yaml'
 - **Environment variables**: ALL_UPPERCASE with underscores (e.g. `IMAGE_REGISTRY`, `TAG_OVERRIDE`, `MANIFEST_PATHS`).
 - **Secrets**: ALL_UPPERCASE with underscores (e.g. `GITHUB_TOKEN`, `GH_PAT_GITOPS`, `NUGET_API_KEY`).
 
+## Descriptions
+
+- **Keep every `description:` to one short line.** It states what the value *is*, not how or why to use it. Prefer `e.g. <example>` over prose describing the format.
+- **Move rationale, caveats, deprecation notices and cross-references into a `#` comment directly above the input**, not into the description string. Use the repo's `#no-space-after-hash` comment style.
+- Avoid multi-sentence descriptions — they bloat the file and make the input list hard to scan.
+- Keeping `key: value` pairs out of descriptions also avoids the colon-space sequence that would otherwise force the whole scalar to be quoted.
+
+  ```yaml
+  #DEPRECATED, superseded by nuget-user (Trusted Publishing). Ignored when nuget-user is set.
+  NUGET_API_KEY:
+    description: Long-lived NuGet API key e.g. secrets.NUGET_API_KEY
+    type: string
+  ```
+
 ## YAML Style
 
 - **2-space indentation** for all workflow and action YAML files.
