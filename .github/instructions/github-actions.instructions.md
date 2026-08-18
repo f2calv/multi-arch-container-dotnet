@@ -27,6 +27,7 @@ applyTo: '.github/workflows/**,.github/actions/**,**/action.yml,**/action.yaml'
 ## Descriptions
 
 - **Keep every `description:` to one short line.** It states what the value *is*, not how or why to use it. Prefer `e.g. <example>` over prose describing the format.
+- **Applies to workflow inputs (`workflow_dispatch`, `workflow_call`) as well as action inputs.** `workflow_dispatch` descriptions render as field labels in the *Run workflow* dialog, where a long sentence wraps and makes the form look messy.
 - **Move rationale, caveats, deprecation notices and cross-references into a `#` comment directly above the input**, not into the description string. Use the repo's `#no-space-after-hash` comment style.
 - Avoid multi-sentence descriptions — they bloat the file and make the input list hard to scan.
 - Keeping `key: value` pairs out of descriptions also avoids the colon-space sequence that would otherwise force the whole scalar to be quoted.
@@ -64,7 +65,8 @@ applyTo: '.github/workflows/**,.github/actions/**,**/action.yml,**/action.yaml'
 ## Composite Actions
 
 - Declare `shell: bash` explicitly on every `run` step — composite actions do not inherit a default shell.
-- Reference scripts relative to the action root using `${{ github.action_path }}/scripts/name.sh`.
+- Reference scripts relative to the action root using `${{ github.action_path }}/.scripts/name.sh`.
+- **Extract sizeable or critical `run` logic into an external script** under `.scripts/` (e.g. `.scripts/check-release-exists.sh`, `.scripts/Invoke-CheckReleaseExists.ps1`) rather than inlining it in the composite action YAML. An external script can be run and tested standalone — locally or from a `.github/workflows/test.yml` — before it's ever exercised by a real Actions run; a `run: |` block embedded in YAML cannot be. Keep genuinely trivial one-liners inline.
 
 ## Security
 
