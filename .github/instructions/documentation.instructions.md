@@ -13,6 +13,20 @@ applyTo: '**/*.md'
 - For large refactorings that touch multiple projects, review all impacted `README.md` files before opening the PR.
 - **Markdown tables**: Table separator rows must use spaces around pipes to match the spaced style used in header and data rows (e.g. `| --- | --- |` not `|---|---|`). This prevents MD060 (table-column-style) warnings.
 - **Configuration examples in library READMEs**: Library projects that expose `IAppConfig` records should include a `## Configuration Examples` section in their `README.md` with `appsettings.json` snippets progressing from minimal configuration through to fully configured. This documents the configuration surface area and provides copy-paste-ready templates for consumers.
+- **Only document what exists**: Do not describe behaviour — encryption, resumability, deduplication, retry semantics, platform support — until the implementation and its tests are in place.
+- **Placeholders in examples**: Examples must use synthetic values. Never include real credentials, tokens, connection strings, endpoints, hostnames, device addresses, or personal data.
+
+### Structure and SEO
+
+Apply to the repository root `README.md` and to every project `README.md`:
+
+- **Exactly one `# H1`**, as the first content line after any front matter, naming the repository or project. Never repeat the H1 lower down and never open with `##`.
+- **Never skip heading levels**: `#` → `##` → `###` in order. Skipping breaks document outline extraction and MD001.
+- **Lead with a one- or two-sentence summary** directly under the H1 stating what the thing is and who it is for. Search engines and package registries surface this as the description.
+- **Keep the H1 aligned with the package identity** so the README title, the `.csproj` `<Description>`, and the published registry listing agree.
+- **Descriptive link text**: Never `click here`, and never a bare URL where a phrase reads better.
+- **Alt text on every image** describing the content rather than the file (`![Service dependency graph](…)`, not `![diagram](…)`).
+- **Unique headings within a file** so generated anchors resolve predictably.
 
 ## Mermaid Diagrams
 
@@ -46,6 +60,7 @@ Use these consistent heading patterns before Mermaid diagrams:
 | `## Event Flow` | Event-driven processing (pub/sub, channels, streams) |
 | `## Service Architecture` | How services interact (SignalR hubs, background services, API clients) |
 | `## Dependency Graph` | Package/project dependencies, references |
+| `## Application Hierarchy` | Nested application or component structures |
 | `## Class Hierarchy` | C# class structures, inheritance trees |
 | `## Deployment Flow` | CI/CD pipelines, GitHub Actions workflows, Helm/K8s deployments |
 | `## Configuration Hierarchy` | IAppConfig structure, nested configuration objects |
