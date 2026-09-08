@@ -19,7 +19,7 @@ BUILDER=$(echo "$GIT_REPOSITORY" | tr -d '-')
 
 #Note: a multi-platform image cannot be loaded into the local docker image store, so a
 #      local build targets a single platform. To exercise all architectures run:
-#        PLATFORM=linux/amd64,linux/arm64,linux/arm/v7 OUTPUT=--push ./build.sh
+#        PLATFORM=linux/amd64,linux/arm64,linux/arm/v7 OUTPUT=--output=type=oci,dest=multi-arch-container.tar ./build.sh
 PLATFORM="${PLATFORM:-linux/amd64}"
 OUTPUT="${OUTPUT:---load}"
 
@@ -45,6 +45,11 @@ docker buildx build \
     --pull \
     $OUTPUT \
     .
+
+if [[ "$OUTPUT" != "--load" ]]; then
+    echo "Build completed with '$OUTPUT'; no local image was loaded."
+    exit 0
+fi
 
 #Preview matching images
 #https://docs.docker.com/reference/cli/docker/image/ls/

@@ -202,10 +202,10 @@ Or
 
 Both scripts are byte-identical across the four sibling repositories - every value they need is derived from git rather than hard-coded. They emulate the `image` job of [ci.yml](.github/workflows/ci.yml).
 
-A multi-platform image cannot be loaded into the local docker image store, so by default the scripts build a single platform (`linux/amd64`) with `--load`. To exercise all three architectures, push instead of loading:
+A multi-platform image cannot be loaded into the local Docker image store, so by default the scripts build a single platform (`linux/amd64`) with `--load`. To exercise all three architectures locally, export an OCI archive instead:
 
 ```bash
-PLATFORM=linux/amd64,linux/arm64,linux/arm/v7 OUTPUT=--push ./build.sh
+PLATFORM=linux/amd64,linux/arm64,linux/arm/v7 OUTPUT=--output=type=oci,dest=multi-arch-container.tar ./build.sh
 ```
 
 ## Build & Test Commands
