@@ -18,7 +18,7 @@ IMAGE_NAME="$GIT_REPOSITORY:$GIT_TAG"
 BUILDER=$(echo "$GIT_REPOSITORY" | tr -d '-')
 
 #Note: a multi-platform image cannot be loaded into the local docker image store, so a
-#      local build targets a single platform. To exercise all three architectures run:
+#      local build targets a single platform. To exercise all architectures run:
 #        PLATFORM=linux/amd64,linux/arm64,linux/arm/v7 OUTPUT=--push ./build.sh
 PLATFORM="${PLATFORM:-linux/amd64}"
 OUTPUT="${OUTPUT:---load}"

@@ -72,11 +72,12 @@ This repository is a .NET application that demonstrates how to build multi-archi
 
 ### Sibling Repositories (alignment is a hard requirement)
 
-Three repositories implement the *same* trivial worker application in three languages:
+Four repositories implement the *same* trivial worker application in four languages:
 
 - [multi-arch-container-dotnet](https://github.com/f2calv/multi-arch-container-dotnet) (this one)
 - [multi-arch-container-go](https://github.com/f2calv/multi-arch-container-go)
 - [multi-arch-container-rust](https://github.com/f2calv/multi-arch-container-rust)
+- [multi-arch-container-python](https://github.com/f2calv/multi-arch-container-python)
 
 Their premise is that a developer fluent in one language can learn another language's containerisation story by diffing two repositories. **Any change made here must be considered for the other two.** Keep the following as close to identical as possible:
 
@@ -100,20 +101,21 @@ Do **not** wire `pre-commit install` into `.devcontainer/postCreateCommand.sh`, 
 
 ### Cross-Repository docker-compose
 
-[`docker-compose.yml`](../docker-compose.yml) lives **only in this repository** and builds/runs all three sibling images together, so environment-variable and configuration behaviour can be compared side by side. It expects the sibling repositories to be cloned alongside this one:
+[`docker-compose.yml`](../docker-compose.yml) lives **only in this repository** and builds/runs all four sibling images together, so environment-variable and configuration behaviour can be compared side by side. It expects the sibling repositories to be cloned alongside this one:
 
 ```text
 source/github/
 ├── multi-arch-container-dotnet/   <- docker-compose.yml lives here
 ├── multi-arch-container-go/
-└── multi-arch-container-rust/
+├── multi-arch-container-rust/
+└── multi-arch-container-python/
 ```
 
 Keep the `x-provenance` / `x-app-config` YAML anchors in sync with the `ARG`/`ENV` block of the Dockerfiles. Do not duplicate this file into the sibling repositories.
 
 ### Project Structure
 
-- `docker-compose.yml` – builds and runs all three sibling images together (see above).
+- `docker-compose.yml` – builds and runs all four sibling images together (see above).
 - `src/multi-arch-container-dotnet/` – console application source.
   - `Program.cs` – entry point; configuration, logging and DI wiring only.
   - `Models/_AppConfig.cs` – application configuration bound from the `app` section.
@@ -138,7 +140,7 @@ Keep the `x-provenance` / `x-app-config` YAML anchors in sync with the `ARG`/`EN
 
 ### Configuration Keys
 
-Configuration keys are **snake_case**, not PascalCase, and are mapped onto idiomatic C# property names with `[ConfigurationKeyName]`. This is deliberate: the sibling Go and Rust configuration libraries lower-case environment keys, so snake_case is the only casing where the file key and the environment key resolve identically in all three languages. Do not "correct" them to PascalCase.
+Configuration keys are **snake_case**, not PascalCase, and are mapped onto idiomatic C# property names with `[ConfigurationKeyName]`. This is deliberate: the sibling Go and Rust configuration libraries lower-case environment keys, so snake_case is the only casing where the file key and the environment key resolve identically across all four languages. Do not "correct" them to PascalCase.
 
 | Key | Environment variable | Default |
 | --- | --- | --- |

@@ -19,7 +19,7 @@ $IMAGE_NAME = "$($GIT_REPOSITORY):$($GIT_TAG)"
 $BUILDER = $GIT_REPOSITORY -replace '-', ''
 
 #Note: a multi-platform image cannot be loaded into the local docker image store, so a
-#      local build targets a single platform. To exercise all three architectures run:
+#      local build targets a single platform. To exercise all architectures run:
 #        $env:PLATFORM='linux/amd64,linux/arm64,linux/arm/v7'; $env:OUTPUT='--push'; ./build.ps1
 $PLATFORM = if ($env:PLATFORM) { $env:PLATFORM } else { 'linux/amd64' }
 $OUTPUT = if ($env:OUTPUT) { $env:OUTPUT } else { '--load' }

@@ -9,6 +9,7 @@
 #   https://github.com/f2calv/multi-arch-container-dotnet   <- you are here
 #   https://github.com/f2calv/multi-arch-container-go
 #   https://github.com/f2calv/multi-arch-container-rust
+#   https://github.com/f2calv/multi-arch-container-python
 #
 # ------------------------------------------------------------------------------
 # Stage 1 of 2: build
@@ -102,7 +103,7 @@ LABEL org.opencontainers.image.title="multi-arch-container-dotnet" \
     org.opencontainers.image.revision="$GIT_COMMIT"
 
 # $APP_UID is defined by the .NET base images (1654). Chiseled images already run
-# as this user - setting it explicitly documents the intent and keeps the three
+# as this user - setting it explicitly documents the intent and keeps the four
 # sibling repositories consistent.
 USER $APP_UID
 

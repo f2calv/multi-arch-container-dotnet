@@ -6,7 +6,7 @@ namespace CasCap.Models;
 /// the Dockerfile (populated by CI, or by <c>build.sh</c>/<c>build.ps1</c> locally). They use
 /// SCREAMING_SNAKE_CASE rather than the hierarchical <c>Section__Property</c> convention, so each
 /// property is mapped explicitly with <see cref="Microsoft.Extensions.Configuration.ConfigurationKeyNameAttribute"/>.
-/// The sibling Go and Rust repositories consume the identical variable names.
+/// The sibling Go, Rust and Python repositories consume the identical variable names.
 /// </remarks>
 public sealed record BuildInfo
 {

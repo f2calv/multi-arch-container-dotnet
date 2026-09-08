@@ -4,7 +4,7 @@ namespace CasCap.Services;
 /// <remarks>
 /// Exists purely to demonstrate the wiring: structured logging via <see cref="ILogger{TCategoryName}"/>
 /// (Serilog behind the scenes) and strongly-typed configuration via <see cref="IOptions{TOptions}"/>.
-/// The sibling Go and Rust repositories contain a functionally identical worker.
+/// The sibling Go, Rust and Python repositories contain a functionally identical worker.
 /// </remarks>
 public sealed class WorkerService(
     ILogger<WorkerService> logger,

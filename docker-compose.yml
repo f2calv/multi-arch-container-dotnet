@@ -1,4 +1,4 @@
-# Builds and runs all three sibling multi-arch-container images side by side, so that
+# Builds and runs all four sibling multi-arch-container images side by side, so that
 # configuration, environment variables and structured log output can be compared directly.
 #
 # This file lives ONLY in the .NET repository and expects the siblings to be cloned alongside it:
@@ -6,10 +6,11 @@
 #   source/github/
 #   ├── multi-arch-container-dotnet/   <- you are here
 #   ├── multi-arch-container-go/
-#   └── multi-arch-container-rust/
+#   ├── multi-arch-container-rust/
+#   └── multi-arch-container-python/
 #
 # Usage:
-#   docker compose up --build                        # build all three in parallel, then run
+#   docker compose up --build                        # build all four in parallel, then run
 #   docker compose up --build --force-recreate       # ignore cached containers
 #   docker compose logs -f rust                      # follow a single service
 #   docker compose down                              # stop and remove
@@ -32,7 +33,7 @@ x-provenance: &provenance
   GITHUB_RUN_NUMBER: ${GITHUB_RUN_NUMBER:-0}
 
 # ── Application configuration ─────────────────────────────────────────────────
-# Passed as runtime environment variables. All three applications resolve these identically:
+# Passed as runtime environment variables. All four applications resolve these identically:
 # the `app` section of appsettings.json, overridden by APP__<KEY> from the environment.
 x-app-config: &app-config
   APP__GREETING: ${APP__GREETING:-Hello from a multi-architecture container}
@@ -71,4 +72,15 @@ services:
       <<: *app-config
       # tracing-subscriber reads its level from RUST_LOG (EnvFilter syntax).
       RUST_LOG: ${LOG_LEVEL:-info}
+    restart: "no"
+
+  python:
+    image: multi-arch-container-python:compose
+    build:
+      context: ../multi-arch-container-python
+      args: *provenance
+    environment:
+      <<: *app-config
+      # Python logging reads its level from LOG_LEVEL (debug|info|warn|error).
+      LOG_LEVEL: ${LOG_LEVEL:-info}
     restart: "no"
