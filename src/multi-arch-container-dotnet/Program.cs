@@ -83,7 +83,6 @@ builder.Services.AddHostedService<WorkerService>();
 
 var host = builder.Build();
 
-host.Services.GetRequiredService<ILogger<Program>>()
-    .LogInformation("{ClassName} Hit Ctrl-C to exit....", nameof(Program));
+host.Services.GetRequiredService<ILogger<Program>>().LogInformation("Hit Ctrl-C to exit....");
 
 await host.RunAsync();
