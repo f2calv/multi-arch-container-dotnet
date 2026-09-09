@@ -1,3 +1,4 @@
+global using CasCap;
 global using CasCap.Models;
 global using CasCap.Services;
 global using Microsoft.Extensions.Configuration;

@@ -97,21 +97,36 @@ Set `APP__LOG_FORMAT=json` to emit newline-delimited JSON instead of human-reada
 docker run --rm -e APP__LOG_FORMAT=json ghcr.io/f2calv/multi-arch-container-dotnet
 ```
 
+### OpenTelemetry
+
+Set `OTEL_EXPORTER_OTLP_ENDPOINT` to enable batched logs, metrics and traces over OTLP/HTTP with Protocol Buffers. Serilog console logging remains enabled in the selected text or JSON format. The worker emits a `worker.iteration` span and increments the `worker.iterations` counter on every cycle.
+
+```bash
+docker run --rm \
+  -e OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318 \
+  -e OTEL_SERVICE_NAME=multi-arch-container-dotnet \
+  -e OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=development \
+  ghcr.io/f2calv/multi-arch-container-dotnet
+```
+
+The exporter honors signal-specific `OTEL_EXPORTER_OTLP_*` variables for endpoints, headers, compression, certificates and timeouts. When the base endpoint is absent, no OpenTelemetry provider or exporter is initialized.
+
 ## Configuration
 
 Configuration is layered by [Microsoft.Extensions.Configuration](https://learn.microsoft.com/dotnet/core/extensions/configuration), in ascending order of precedence:
 
 1. Property defaults on the `AppConfig` record.
 2. [`appsettings.json`](src/multi-arch-container-dotnet/appsettings.json).
-3. Environment variables.
-4. Command line arguments.
+3. An optional `appsettings.${DOTNET_ENVIRONMENT}.json` file.
+4. Environment variables.
+5. Command line arguments.
 
 Values are bound to validated `IOptions<T>` records with `ValidateDataAnnotations().ValidateOnStart()`, so a bad value fails fast at startup rather than surfacing later.
 
 | Key | Environment variable | Default | Description |
 | --- | --- | --- | --- |
 | `app:greeting` | `APP__GREETING` | `Hello from a multi-architecture container` | Message logged each iteration |
-| `app:interval_seconds` | `APP__INTERVAL_SECONDS` | `3` | Delay between iterations |
+| `app:interval_seconds` | `APP__INTERVAL_SECONDS` | `3` | Delay between iterations, from 1 to 3600 seconds |
 | `app:log_format` | `APP__LOG_FORMAT` | `text` | `text` or `json` |
 
 Keys are **snake_case**, not PascalCase, and mapped onto idiomatic C# property names with `[ConfigurationKeyName]`. That is deliberate: the Go and Rust configuration libraries lower-case environment keys, so snake_case is the only casing where the file key and the environment key resolve identically across all four languages.
