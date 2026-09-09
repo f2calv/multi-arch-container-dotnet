@@ -11,6 +11,9 @@ using Serilog.Sinks.SystemConsole.Themes;
 //1) Configuration sources, in ascending order of precedence:
 //     appsettings.json -> appsettings.{Environment}.json -> environment variables -> command line.
 //   Host.CreateApplicationBuilder wires all four up for us.
+//   The environment-specific file is selected by DOTNET_ENVIRONMENT rather than the APP_* naming
+//   used elsewhere, because the host owns that variable. The sibling repositories deliberately do
+//   NOT hand-roll an equivalent - a built-in is not worth reimplementing three times.
 var builder = Host.CreateApplicationBuilder(args);
 
 //2) Strongly-typed, validated configuration.

@@ -121,6 +121,8 @@ Configuration is layered by [Microsoft.Extensions.Configuration](https://learn.m
 4. Environment variables.
 5. Command line arguments.
 
+Step 3 is the one place where this repository intentionally has a capability its siblings lack. `Host.CreateApplicationBuilder` provides it for free, keyed off the host's own `DOTNET_ENVIRONMENT` variable, so removing it would mean fighting the framework. Reimplementing it in Go, Rust and Python would mean hand-rolling file resolution and merge semantics in three languages to match a built-in, which is not a trade worth making in a reference repository.
+
 Values are bound to validated `IOptions<T>` records with `ValidateDataAnnotations().ValidateOnStart()`, so a bad value fails fast at startup rather than surfacing later.
 
 | Key | Environment variable | Default | Description |
