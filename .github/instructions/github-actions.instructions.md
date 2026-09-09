@@ -32,6 +32,10 @@ applyTo: '.github/workflows/**,.github/actions/**,**/action.yml,**/action.yaml'
 - Avoid multi-sentence descriptions — they bloat the file and make the input list hard to scan.
 - Keeping `key: value` pairs out of descriptions also avoids the colon-space sequence that would otherwise force the whole scalar to be quoted.
 
+<!-- TODO: this example is lifted from a NuGet publishing workflow and has nothing to do with
+     container images. Replace it with an input these repositories actually declare, or move the
+     whole Descriptions section into the gha-workflows repository where the inputs live. -->
+
   ```yaml
   #DEPRECATED, superseded by nuget-user (Trusted Publishing). Ignored when nuget-user is set.
   NUGET_API_KEY:
