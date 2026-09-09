@@ -15,7 +15,18 @@
 #   docker compose logs -f rust                      # follow a single service
 #   docker compose down                              # stop and remove
 #
+# To compare OpenTelemetry output as well, start the collector profile and point the applications
+# at it. Every exported log, metric and trace is printed to the collector's stdout:
+#   OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318 docker compose --profile telemetry up --build
+#   docker compose logs -f otel-collector
+#
 # Compose builds services in parallel by default. Add --parallel 1 to serialise for readable output.
+#
+# TODO: this file is outgrowing its host repository. Four application services plus a collector is
+#       orchestration, not a .NET concern, and the sibling repositories cannot use it without
+#       cloning this one. Move it to a dedicated multi-arch-container-orchestrator repository that
+#       owns the compose file, the collector configuration and any future dashboards, and reference
+#       that repository from all four READMEs instead.
 name: multi-arch-container
 
 # ── Build provenance ──────────────────────────────────────────────────────────
@@ -35,12 +46,27 @@ x-provenance: &provenance
 # ── Application configuration ─────────────────────────────────────────────────
 # Passed as runtime environment variables. All four applications resolve these identically:
 # the `app` section of appsettings.json, overridden by APP__<KEY> from the environment.
+#
+# OTEL_EXPORTER_OTLP_ENDPOINT is empty by default, which is what keeps the OpenTelemetry SDK
+# uninitialised in all four applications. Setting it is the only switch required.
 x-app-config: &app-config
   APP__GREETING: ${APP__GREETING:-Hello from a multi-architecture container}
   APP__INTERVAL_SECONDS: ${APP__INTERVAL_SECONDS:-3}
   APP__LOG_FORMAT: ${APP__LOG_FORMAT:-text}
+  OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+  OTEL_RESOURCE_ATTRIBUTES: ${OTEL_RESOURCE_ATTRIBUTES:-deployment.environment.name=compose}
 
 services:
+  # Only started by `docker compose --profile telemetry up`, so the default run stays lightweight
+  # and continues to demonstrate the no-endpoint, no-SDK path.
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    profiles: [telemetry]
+    command: ["--config=/etc/otel-collector.yaml"]
+    volumes:
+      - ./.docker/otel-collector.yaml:/etc/otel-collector.yaml:ro
+    restart: "no"
+
   dotnet:
     image: multi-arch-container-dotnet:compose
     build:

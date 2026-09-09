@@ -266,6 +266,16 @@ docker compose down
 
 Build provenance (`GIT_*`, `GITHUB_*`) is passed as **build args** and baked into each image, so changing one needs `--build`. Application configuration (`APP__*`) is passed as **runtime environment**, so it takes effect on the next `up`.
 
+The `telemetry` profile adds an [OpenTelemetry Collector](.docker/otel-collector.yaml) so the OTLP output of all four can be compared too. It prints every log, metric and trace it receives to its own stdout:
+
+```bash
+OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318 docker compose --profile telemetry up --build
+
+docker compose logs -f otel-collector
+```
+
+Without `OTEL_EXPORTER_OTLP_ENDPOINT` the collector is not started and none of the four initialises an OpenTelemetry provider, which is the default path.
+
 ## Deployment Flow
 
 ```mermaid
