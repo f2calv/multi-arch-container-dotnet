@@ -49,10 +49,6 @@ builder.Services.AddSerilog((services, loggerConfig) =>
 var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
 if (!string.IsNullOrWhiteSpace(otlpEndpoint))
 {
-    if (!Uri.TryCreate(otlpEndpoint, UriKind.Absolute, out var endpoint)
-        || (endpoint.Scheme != Uri.UriSchemeHttp && endpoint.Scheme != Uri.UriSchemeHttps))
-        throw new InvalidOperationException("OTEL_EXPORTER_OTLP_ENDPOINT must be an absolute HTTP or HTTPS URI.");
-
     var serviceName = builder.Configuration["OTEL_SERVICE_NAME"] ?? "multi-arch-container-dotnet";
     var serviceVersion = builder.Configuration["GIT_TAG"] is { Length: > 0 } tag && tag != BuildInfo.Unknown
         ? tag
@@ -71,7 +67,9 @@ if (!string.IsNullOrWhiteSpace(otlpEndpoint))
         .WithLogging()
         .WithTracing(tracing => tracing.AddSource(Telemetry.InstrumentationName))
         .WithMetrics(metrics => metrics.AddMeter(Telemetry.InstrumentationName))
-        .UseOtlpExporter(OtlpExportProtocol.HttpProtobuf, endpoint);
+        //This overload is the only way to pin the protocol to HTTP/protobuf, as the sibling
+        //repositories do. A malformed endpoint surfaces as the SDK's own UriFormatException.
+        .UseOtlpExporter(OtlpExportProtocol.HttpProtobuf, new Uri(otlpEndpoint));
 }
 
 //5) TimeProvider keeps the worker's delays deterministic and testable.
