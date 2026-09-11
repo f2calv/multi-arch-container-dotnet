@@ -24,6 +24,25 @@ applyTo: '.github/workflows/**,.github/actions/**,**/action.yml,**/action.yaml'
 - **Environment variables**: ALL_UPPERCASE with underscores (e.g. `IMAGE_REGISTRY`, `TAG_OVERRIDE`, `MANIFEST_PATHS`).
 - **Secrets**: ALL_UPPERCASE with underscores (e.g. `GITHUB_TOKEN`, `GH_PAT_GITOPS`, `NUGET_API_KEY`).
 
+## Descriptions
+
+- **Keep every `description:` to one short line.** It states what the value *is*, not how or why to use it. Prefer `e.g. <example>` over prose describing the format.
+- **Applies to workflow inputs (`workflow_dispatch`, `workflow_call`) as well as action inputs.** `workflow_dispatch` descriptions render as field labels in the *Run workflow* dialog, where a long sentence wraps and makes the form look messy.
+- **Move rationale, caveats, deprecation notices and cross-references into a `#` comment directly above the input**, not into the description string. Use the repo's `#no-space-after-hash` comment style.
+- Avoid multi-sentence descriptions — they bloat the file and make the input list hard to scan.
+- Keeping `key: value` pairs out of descriptions also avoids the colon-space sequence that would otherwise force the whole scalar to be quoted.
+
+<!-- TODO: this example is lifted from a NuGet publishing workflow and has nothing to do with
+     container images. Replace it with an input these repositories actually declare, or move the
+     whole Descriptions section into the gha-workflows repository where the inputs live. -->
+
+  ```yaml
+  #DEPRECATED, superseded by nuget-user (Trusted Publishing). Ignored when nuget-user is set.
+  NUGET_API_KEY:
+    description: Long-lived NuGet API key e.g. secrets.NUGET_API_KEY
+    type: string
+  ```
+
 ## YAML Style
 
 - **2-space indentation** for all workflow and action YAML files.
@@ -50,7 +69,8 @@ applyTo: '.github/workflows/**,.github/actions/**,**/action.yml,**/action.yaml'
 ## Composite Actions
 
 - Declare `shell: bash` explicitly on every `run` step — composite actions do not inherit a default shell.
-- Reference scripts relative to the action root using `${{ github.action_path }}/scripts/name.sh`.
+- Reference scripts relative to the action root using `${{ github.action_path }}/.scripts/name.sh`.
+- **Extract sizeable or critical `run` logic into an external script** under `.scripts/` (e.g. `.scripts/check-release-exists.sh`, `.scripts/Invoke-CheckReleaseExists.ps1`) rather than inlining it in the composite action YAML. An external script can be run and tested standalone — locally or from a `.github/workflows/test.yml` — before it's ever exercised by a real Actions run; a `run: |` block embedded in YAML cannot be. Keep genuinely trivial one-liners inline.
 
 ## Security
 

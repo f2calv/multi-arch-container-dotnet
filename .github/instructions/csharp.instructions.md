@@ -37,12 +37,37 @@ applyTo: '**/*.cs'
 - **Namespace declarations**: File-scoped (not block-scoped). Using directives go above the namespace.
 - **Using directive ordering**: Pure alphabetical — do **not** place `System.*` first (`dotnet_sort_system_directives_first = false`). No blank line separators between groups (`dotnet_separate_import_directive_groups = false`). This applies to both regular `using` directives and `global using` directives in `GlobalUsings.cs`.
 - **Global usings file**: Every project must have a `GlobalUsings.cs` file located in the project root (not in a sub-folder). The file must always be named `GlobalUsings.cs`.
+- **Global usings threshold**: When a namespace is imported by more than two files in a project, move it into that project's `GlobalUsings.cs` and delete the per-file `using` directives. Re-check after any refactor that adds files, and never leave a per-file `using` that duplicates a global one.
 - **Standard overrides at bottom**: Standard C# overrides such as `ToString`, `GetHashCode`, and `Equals` should be placed at the bottom of the class/record body, just above any `#region` blocks for private/static helpers.
 - **Property spacing**: Separate each public property declaration (`get`/`set`/`init`) with a blank line (including in records and classes with only auto-properties). Private backing fields, however, should appear on consecutive lines with **no** blank line between them.
 - **Boolean property naming**: Boolean configuration properties should use `{Feature}{State}` suffix form (past-participle or adjective describing state), not an imperative-verb prefix. Properties describe state; methods describe actions (e.g. `DistributedLockingEnabled`, `LocalCacheInvalidationEnabled` — not `EnableDistributedLocking`).
 - **Constants extraction**: When a configuration record accumulates `const` fields that serve as well-known keys, profile names, or identifiers (not bindable configuration properties), extract them into a dedicated `static class` in the same namespace (e.g. `RedlockProfiles` for `RedlockConfig`). This keeps config records focused on their bindable data shape and the constants discoverable via a single type.
+- **Wire constants in a Constants folder**: REST request URIs, route templates, header names, and other on-the-wire literals belong in a dedicated `static class` under a `Constants` folder and namespace — not alongside DTOs in `Models`. Group them per API surface (e.g. `RequestUris`, `PickerRequestUris`, `UploadHeaders`). Applies to both APIs this code calls and APIs it exposes.
 - **Enums vs string constants**: Use `enum` for closed sets within a single assembly or tightly-coupled projects (compile-time safety, IntelliSense, `switch` exhaustiveness). For values crossing library boundaries — config keys in `appsettings.json`, env-var feature flags, dictionary keys across independently-versioned packages, or identifiers exposed via MCP / REST — prefer a `static class` of `const string` fields using `nameof()` (e.g. `FeatureNames`, `SinkTypes`): config-friendly, JSON-serialisable, no assembly dependency. When such a set needs startup validation, expose a static `IReadOnlySet<string> ValidNames` built via reflection over the class's own `const` fields so new members register automatically.
 - **Validation attributes on configuration properties**: Properties bound from `appsettings.json` / env vars must carry appropriate `System.ComponentModel.DataAnnotations` attributes (e.g. `[Url]` on URIs, `[Range(1, 65535)]` on TCP ports, `[MinLength(1)]` on secrets/identifiers, `[Range(1, int.MaxValue)]` on millisecond timings, `[Range(0.0, 1.0)]` on ratios, `[Phone]` on phone numbers). Inline same-family attributes on one line (`[Required, Range(1, 65535)]`); keep different families on separate lines (`[Required, Url]` vs. `[JsonPropertyName]`). Nested complex-object properties carry `[ValidateObjectMembers]` for recursive validation.
+- **Validate at boundaries**: Validate configuration and external input where it enters the system, and fail with actionable messages that contain no secrets or personal data.
+
+## Application Wiring
+
+- **Hosted entry points are wiring-only**: In production hosted applications, keep `Program.cs` focused on configuration binding, dependency injection, logging, middleware or hosted-service registration, and starting the host. Extract business logic and complex initialization into dedicated types, one type per file. Linear console samples may demonstrate an end-to-end workflow in `Program.cs` when extraction would obscure the example.
+- **Centralize application environment access**: Bind application-owned settings through `Microsoft.Extensions.Configuration`; do not scatter `Environment.GetEnvironmentVariable` calls through services. Centralized boundary reads of standardized platform, CI and build-provenance variables are permitted.
+- **Validate options at startup**: Use data annotations, `IValidateOptions<T>` or explicit validators with `ValidateOnStart()` so invalid configuration fails before request handling or background work begins.
+- **Defaults are deliberate**: Give optional settings explicit safe defaults. Keep required credentials and identifiers required rather than supplying plausible-looking fallback values.
+
+## Error Handling
+
+- **Catch only when handling, translating or enriching**: Do not catch an exception merely to log and rethrow it unchanged, and never swallow failures into a default value.
+- **Preserve the cause**: Wrap failures with operation context and retain the original exception as `InnerException`; use domain-specific exception types when callers need to distinguish conditions.
+- **Keep context non-sensitive**: Include the failed operation and safe identifiers, but never credentials, tokens, connection strings, full local paths or personally identifying values.
+- **Exceptions are not normal control flow**: Use result types, `Try*` methods or nullable returns for expected absence and validation outcomes where those forms make the contract clearer.
+- **Let cancellation propagate**: Do not convert `OperationCanceledException` into an error when the supplied `CancellationToken` requested cancellation.
+
+## Background Work and Shutdown
+
+- **Propagate the host token**: Pass `BackgroundService.ExecuteAsync`'s `stoppingToken` through every delay, I/O operation and nested worker call so SIGTERM stops containers promptly.
+- **Use cancellable waits**: Call `Task.Delay(delay, timeProvider, stoppingToken)` or another cancellation-aware primitive; never poll a shutdown flag around an uncancellable sleep.
+- **Own background tasks**: Avoid fire-and-forget `Task` calls. Retain and await tasks whose failures or completion belong to the service lifecycle.
+- **Dispose during shutdown**: Release owned timers, streams, registrations and service scopes deterministically before the host exits.
 
 ## Suppressed Warnings
 
@@ -64,14 +89,30 @@ Configured in `Directory.Build.props`: `IDE1006`, `IDE0079`, `IDE0042`, `CS0162`
 ## Logging
 
 - **`{ClassName}` first**: Every structured log message must include `{ClassName}` as the first template parameter, using `nameof(EnclosingClass)` as the argument (e.g. `_logger.LogInformation("{ClassName} something happened", nameof(MyService));`).
+- **Message templates are constant**: Never use string interpolation or concatenation to construct a log message. Put every varying value in a named template parameter so events group consistently.
 - **Template parameters**: Use PascalCase for all template parameters and never enclose them in quotes (e.g. `{DesiredValue}`, `{RecordCount}`, `{ValueBefore}` not `'{DesiredValue}'`, `'{RecordCount}'`, `'{ValueBefore}'`). The logger handles value formatting automatically.
 - **No `.Value` suffix bleed**: When logging a value accessed via `options.Value.PropertyName` (primary constructor `IOptions<T>` pattern), the template parameter name must **not** inherit the `.Value` segment and must **not** use a `Val` suffix either. Properties are already well-named — use the property name directly as the template parameter (e.g. `{ServiceFamily}` for `config.Value.ServiceFamily`).
 - **No magic strings in log messages**: When a log message references an enum value, class name, or other identifiable symbol, pass it via `nameof()` as a template argument rather than embedding it as a literal string in the message template.
 - **Avoid `nameof()` as label-only template parameters**: Do not inject property/type names as separate structured-log fields just to avoid a literal label — it clutters structured output (Grafana, Loki, OpenTelemetry). Use the property name as plain text in the template and reserve `{Braces}` for actual values. E.g. `"{ClassName} ServiceFamily={ServiceFamily}"` with args `nameof(MyService), config.Value.ServiceFamily` — not `"{ClassName} {ServiceFamily}={ServiceFamilyValue}"` with an extra `nameof(MyConfig.ServiceFamily)` arg.
 - **`[LoggerMessage]` on hot paths**: Tight loops, `Channel` readers, stream consumers, tick processors, and sink iterators must use source-generated `[LoggerMessage]` logging to avoid `params object[]` boxing and interpolation. Declare `private static partial void` methods at the bottom of the partial class (or in a `{ClassName}.Logging.cs` file for larger services). First parameter is `ILogger logger` (not `this ILogger`). Call sites use `LogXxx(logger, ...)` / `LogXxx(_logger, ...)` — pass the primary-constructor `logger` or the `_logger` field. Leave dynamic-level calls (`logger.Log(level, ...)`) unconverted — `[LoggerMessage]` requires a compile-time-constant level.
 - **Logging belongs in services, not controllers**: Domain-specific logging (`LogInformation` with request-specific fields) must live in the service method, not the controller. Controllers should not inject `ILogger` unless they perform work that cannot be delegated (e.g. SSE streaming loops with `LogTrace`).
+- **`ILogger<T>` only**: Use `ILogger<T>` with structured message templates. Never use `Console.WriteLine` or `Debug.WriteLine` for application diagnostics.
+- **Never log secrets or personal data**: Client secrets, access/refresh tokens, authorization headers, cached token contents, connection strings, SAS query strings, full local paths, and personally identifying values must never reach a log sink.
+
+## HTTP and Streams
+
+- **Reuse DI-supplied `HttpClient` instances**: Obtain clients from `IHttpClientFactory` or a typed client. Never construct a new `HttpClient` per request.
+- **Propagate `CancellationToken`**: Thread it through every HTTP, stream, file, database, and paging operation, and pass it on to framework and SDK calls.
+- **Never block on async code**: No `.Result`, `.Wait()`, `GetAwaiter().GetResult()`, or other sync-over-async wrappers.
+- **Stream large payloads**: Do not buffer an entire file or response body into memory unless the public method explicitly returns a byte array.
+- **Dispose owned resources deterministically**: `HttpRequestMessage`, `HttpResponseMessage`, streams, and cancellation registrations via `using` / `await using`.
+- **Validate before deserialising**: Check the response status and content before reading the body into a model.
+- **Preserve response context in exceptions**: Include the response status and body in a domain exception, with credentials and user data redacted.
+- **Bounded queues and explicit backpressure**: Prefer them over unbounded in-memory work collections.
 
 ## Performance
+
+- **Measure before optimising**: Use BenchmarkDotNet, `dotnet-counters`, `dotnet-trace` or a representative load test before adding performance complexity. In demonstration code, clarity wins unless measurements identify a meaningful hot path.
 
 ### ValueTask vs Task
 
@@ -110,13 +151,6 @@ Configured in `Directory.Build.props`: `IDE1006`, `IDE0079`, `IDE0042`, `CS0162`
 
 - Prefer `System.Threading.Lock` over `object` for dedicated lock instances. Enables a thinner locking path and signals intent more clearly.
 
-### TimeProvider for Current Time
-
-- **Never call `DateTime.UtcNow`, `DateTime.Now`, `DateTime.Today`, `DateTimeOffset.UtcNow`, or `DateTimeOffset.Now` directly in service / production code.** Inject `TimeProvider` and read the current instant via `timeProvider.GetUtcNow()` (returns `DateTimeOffset`) or `timeProvider.GetUtcNow().UtcDateTime` (for a `DateTime`). This keeps time deterministic and testable (`FakeTimeProvider`) and lets backtest/simulation runs advance a controlled clock (see `BacktestTimeProvider`).
-- **DI**: `TimeProvider` is registered as a singleton (`TimeProvider.System`) and injected via the primary constructor, ordered after `ILogger` and `IOptions<T>` but before application services. Static helpers that cannot take a constructor may accept an optional `TimeProvider? timeProvider = null` parameter and fall back to `TimeProvider.System`.
-- **Delays and timers on the injected clock**: Use the `TimeProvider` overloads — `Task.Delay(TimeSpan, timeProvider, ct)`, `timeProvider.CreateTimer(...)` — so simulated time controls scheduling too.
-- **Permitted direct use**: Test code, `TimeProvider` implementations themselves (e.g. `BacktestTimeProvider`), and static/`const` field initialisers or model default-property initialisers where DI is unavailable. Prefer refactoring to inject `TimeProvider` when practical.
-
 ### Hot-Path Conventions
 
 - **`[MethodImpl(MethodImplOptions.AggressiveInlining)]`**: Apply to leaf-level parsing/conversion methods called in tight loops. Do not apply to methods with complex control flow — the JIT already inlines small methods.
@@ -126,6 +160,13 @@ Configured in `Directory.Build.props`: `IDE1006`, `IDE0079`, `IDE0042`, `CS0162`
   - Use source-generated `[LoggerMessage]` to eliminate `params object[]` boxing (see Logging section).
 - **Async pass-through on wrappers**: Drop `async`/`await` on thin single-call wrappers to avoid state-machine allocation (see Style section).
 - **`PipeReader` for line-oriented binary streams**: Process data in-place from the pipe's buffer without copying to intermediate `string` objects.
+
+### TimeProvider for Current Time
+
+- **Never call `DateTime.UtcNow`, `DateTime.Now`, `DateTime.Today`, `DateTimeOffset.UtcNow`, or `DateTimeOffset.Now` directly in service / production code.** Inject `TimeProvider` and read the current instant via `timeProvider.GetUtcNow()` (returns `DateTimeOffset`) or `timeProvider.GetUtcNow().UtcDateTime` (for a `DateTime`). This keeps time deterministic and testable (`FakeTimeProvider`) and lets simulation runs advance a controlled clock.
+- **DI**: `TimeProvider` is registered as a singleton (`TimeProvider.System`) and injected via the primary constructor, ordered after `ILogger` and `IOptions<T>` but before application services. Static helpers that cannot take a constructor may accept an optional `TimeProvider? timeProvider = null` parameter and fall back to `TimeProvider.System`.
+- **Delays and timers on the injected clock**: Use the `TimeProvider` overloads — `Task.Delay(TimeSpan, timeProvider, ct)`, `timeProvider.CreateTimer(...)` — so simulated time controls scheduling too.
+- **Permitted direct use**: Test code, `TimeProvider` implementations themselves, and static/`const` field initialisers or model default-property initialisers where DI is unavailable. Prefer refactoring to inject `TimeProvider` when practical.
 
 ## Controllers / Web API
 

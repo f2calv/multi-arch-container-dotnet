@@ -19,8 +19,8 @@ $IMAGE_NAME = "$($GIT_REPOSITORY):$($GIT_TAG)"
 $BUILDER = $GIT_REPOSITORY -replace '-', ''
 
 #Note: a multi-platform image cannot be loaded into the local docker image store, so a
-#      local build targets a single platform. To exercise all three architectures run:
-#        $env:PLATFORM='linux/amd64,linux/arm64,linux/arm/v7'; $env:OUTPUT='--push'; ./build.ps1
+#      local build targets a single platform. To exercise all architectures run:
+#        $env:PLATFORM='linux/amd64,linux/arm64,linux/arm/v7'; $env:OUTPUT='--output=type=oci,dest=multi-arch-container.tar'; ./build.ps1
 $PLATFORM = if ($env:PLATFORM) { $env:PLATFORM } else { 'linux/amd64' }
 $OUTPUT = if ($env:OUTPUT) { $env:OUTPUT } else { '--load' }
 
@@ -47,6 +47,11 @@ docker buildx build `
     --pull `
     $OUTPUT `
     .
+
+if ($OUTPUT -ne '--load') {
+    Write-Host "Build completed with '$OUTPUT'; no local image was loaded."
+    exit 0
+}
 
 #Preview matching images
 #https://docs.docker.com/reference/cli/docker/image/ls/

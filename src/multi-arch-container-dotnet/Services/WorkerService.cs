@@ -4,7 +4,7 @@ namespace CasCap.Services;
 /// <remarks>
 /// Exists purely to demonstrate the wiring: structured logging via <see cref="ILogger{TCategoryName}"/>
 /// (Serilog behind the scenes) and strongly-typed configuration via <see cref="IOptions{TOptions}"/>.
-/// The sibling Go and Rust repositories contain a functionally identical worker.
+/// The sibling Go, Rust and Python repositories contain a functionally identical worker.
 /// </remarks>
 public sealed class WorkerService(
     ILogger<WorkerService> logger,
@@ -23,6 +23,8 @@ public sealed class WorkerService(
 
         while (!stoppingToken.IsCancellationRequested)
         {
+            using var activity = Telemetry.ActivitySource.StartActivity("worker.iteration");
+
             logger.LogInformation("{ClassName} {Greeting} AppName={AppName} ProcessArchitecture={ProcessArchitecture} OSArchitecture={OSArchitecture} OSDescription={OSDescription} FrameworkDescription={FrameworkDescription}",
                 nameof(WorkerService), appConfig.Value.Greeting, AppDomain.CurrentDomain.FriendlyName,
                 RuntimeInformation.ProcessArchitecture, RuntimeInformation.OSArchitecture,
@@ -34,11 +36,13 @@ public sealed class WorkerService(
             logger.LogInformation("{ClassName} github provenance, Workflow={GitHubWorkflow} RunId={GitHubRunId} RunNumber={GitHubRunNumber}",
                 nameof(WorkerService), buildInfo.Value.GitHubWorkflow, buildInfo.Value.GitHubRunId, buildInfo.Value.GitHubRunNumber);
 
+            Telemetry.WorkerIterations.Add(1);
+
             try
             {
                 await Task.Delay(interval, timeProvider, stoppingToken);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
                 break;
             }
@@ -47,3 +51,4 @@ public sealed class WorkerService(
         logger.LogInformation("{ClassName} stopping", nameof(WorkerService));
     }
 }
+

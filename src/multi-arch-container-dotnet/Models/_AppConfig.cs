@@ -6,7 +6,7 @@ namespace CasCap.Models;
 /// double-underscore section separator, e.g. <c>APP__INTERVAL_SECONDS=10</c>.
 /// <para>
 /// Keys are snake_case rather than PascalCase so that the file keys and environment variable names
-/// are byte-identical across the sibling Go and Rust repositories, whose configuration libraries
+/// are byte-identical across the sibling Go, Rust and Python repositories, whose configuration libraries
 /// lower-case environment keys. <see cref="ConfigurationKeyNameAttribute"/> maps each key onto an
 /// idiomatic C# property name.
 /// </para>
