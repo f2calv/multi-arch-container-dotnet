@@ -74,7 +74,7 @@ EOF
 # ------------------------------------------------------------------------------
 FROM mcr.microsoft.com/dotnet/runtime:10.0-noble-chiseled AS final
 WORKDIR /app
-COPY --from=build /out .
+COPY --link --from=build /out .
 
 # -- Provenance ----------------------------------------------------------------
 # Supplied by the CI workflow (.github/workflows/ci.yml) or by build.sh/build.ps1.

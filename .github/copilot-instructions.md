@@ -15,6 +15,7 @@ Detailed conventions live in scoped instruction files under `.github/instruction
 | --- | --- | --- |
 | `csharp.instructions.md` | `**/*.cs` | C# / .NET style, XML docs, logging, performance, Web API |
 | `dotnet.instructions.md` | `**/*.csproj`, `*.slnx`, `Directory.*.props` | Central build/package config, solution format, SDK pinning |
+| `docker.instructions.md` | `**/Dockerfile*`, `.dockerignore` | Multi-arch builds, stage structure, caching, provenance, hardening |
 | `github-actions.instructions.md` | workflows / `action.yml` | GitHub Actions naming, YAML, security, GitVersion |
 | `documentation.instructions.md` | `**/*.md` | README consistency & Mermaid diagrams |
 | `configuration.instructions.md` | `**/appsettings*.json` | `IAppConfig` / appsettings sync |
