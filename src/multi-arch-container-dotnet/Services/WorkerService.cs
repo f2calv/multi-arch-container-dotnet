@@ -51,4 +51,3 @@ public sealed class WorkerService(
         logger.LogInformation("{ClassName} stopping", nameof(WorkerService));
     }
 }
-
