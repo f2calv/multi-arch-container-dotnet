@@ -19,7 +19,7 @@ Four repositories implement the *same* trivial worker application in four langua
 - [multi-arch-container-rust](https://github.com/f2calv/multi-arch-container-rust)
 - [multi-arch-container-python](https://github.com/f2calv/multi-arch-container-python)
 
-Their premise is that a developer fluent in one language can learn another language's containerisation story by diffing two repositories. **Any change made here must be considered for the other two.** Keep the following as close to identical as possible:
+Their premise is that a developer fluent in one language can learn another language's containerisation story by diffing two repositories. **Any change made here must be considered for the other three.** Keep the following as close to identical as possible:
 
 - Repository layout and file names.
 - `Dockerfile` stage names (`build`, `final`), section comment banners and ordering.
