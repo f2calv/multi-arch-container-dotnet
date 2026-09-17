@@ -2,7 +2,7 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/dotnet
 {
   "name": "C# (.NET)",
-  "image": "mcr.microsoft.com/devcontainers/dotnet:latest",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:1-10.0-bookworm",
   // Features to add to the dev container. More info: https://containers.dev/features.
   "features": {
     "ghcr.io/devcontainers-extra/features/pre-commit:2": {},
@@ -17,8 +17,7 @@
       "yqVersion": "latest"
     }
   },
-  "postCreateCommand": "sh ./.devcontainer/postCreateCommand.sh",
-  "postStartCommand": "sh ./.devcontainer/postStartCommand.sh",
+  "postStartCommand": "bash ./.devcontainer/postStartCommand.sh",
   "customizations": {
     "vscode": {
       "settings": {},

@@ -25,3 +25,15 @@ updates:
       interval: weekly
       time: "04:00"
     open-pull-requests-limit: 10
+
+  - package-ecosystem: pre-commit
+    directory: /
+    schedule:
+      interval: weekly
+      time: "04:00"
+
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: weekly
+      time: "04:00"
