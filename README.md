@@ -36,6 +36,31 @@ These repositories are **application code only** - Kubernetes packaging lives in
   - Build Container + Push To GitHub Packages
   - GitHub Release
 
+## Project Structure
+
+- `docker-compose.yml` - builds and runs all four sibling images together, see [Run All Four Side By Side](#run-all-four-side-by-side).
+- `src/multi-arch-container-dotnet/` - console application source.
+  - `Program.cs` - entry point; configuration, logging and DI wiring only.
+  - `Models/_AppConfig.cs` - application configuration bound from the `app` section.
+  - `Models/_BuildInfo.cs` - build provenance bound from the flat `GIT_*`/`GITHUB_*` variables.
+  - `Models/_Enums.cs` - all enums for the project.
+  - `Services/WorkerService.cs` - the `BackgroundService` worker loop.
+  - `appsettings.json` - base configuration.
+- `Dockerfile` - two-stage, cross-compiling, multi-architecture build.
+- `.github/workflows/ci.yml` - CI/CD using reusable workflows from [f2calv/gha-workflows](https://github.com/f2calv/gha-workflows).
+- `build.sh` / `build.ps1` - local build scripts for manual testing.
+- `Directory.Build.props` / `Directory.Packages.props` - central MSBuild properties and NuGet versions.
+
+## Technology Stack
+
+- **Language**: C# 14 / .NET 10.0
+- **Hosting**: `Microsoft.Extensions.Hosting` generic host, `BackgroundService` worker
+- **Logging**: Serilog owns the `Microsoft.Extensions.Logging` pipeline; application code depends only on `ILogger<T>`
+- **Configuration**: `Microsoft.Extensions.Configuration` (`appsettings.json`, then environment variables), bound to validated `IOptions<T>` records
+- **Container**: Docker (multi-stage, chiseled Ubuntu final image, non-root)
+- **CI/CD**: GitHub Actions (reusable workflows from [f2calv/gha-workflows](https://github.com/f2calv/gha-workflows))
+- **Versioning**: GitVersion (MainLine mode)
+
 ## Platform Mapping
 
 RID is short for [Runtime Identifier](https://learn.microsoft.com/dotnet/core/rid-catalog). `docker buildx` injects `TARGETARCH` and `TARGETVARIANT` into the build, and the Dockerfile maps them onto a RID:
