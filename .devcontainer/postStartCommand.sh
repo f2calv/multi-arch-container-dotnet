@@ -1,10 +1,11 @@
-#!/bin/sh
+#!/usr/bin/env bash
+
+# Reports the language and Kubernetes client versions on container start.
+
+set -euo pipefail
 
 echo "postStartCommand.sh"
 echo "-------------------"
-
-sudo apt-get update
-sudo apt-get upgrade -y
 
 dotnet --version
 kubectl version --client --output=yaml | head -2
