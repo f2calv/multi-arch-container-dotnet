@@ -14,6 +14,10 @@ on:
     branches: [main]
     types: [opened, synchronize, reopened]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions: {} #Note: deny all permissions at the workflow level; individual jobs declare only what they need (principle of least privilege)
 
 jobs:
