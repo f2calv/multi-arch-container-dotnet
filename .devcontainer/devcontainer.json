@@ -35,7 +35,7 @@
         "ms-vscode.powershell",
         "github.vscode-github-actions",
         // Language specific
-        "ms-dotnettools.csharp"
+        "ms-dotnettools.csdevkit"
       ]
     }
   },
