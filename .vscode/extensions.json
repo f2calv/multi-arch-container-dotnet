@@ -10,8 +10,9 @@
     "usernamehw.errorlens",
     "eamodio.gitlens",
     "mutantdino.resourcemonitor",
+    "ms-vscode.powershell",
+    "github.vscode-github-actions",
     // Language specific
-    "ms-dotnettools.csharp",
-    "ms-vscode.powershell"
+    "ms-dotnettools.csharp"
   ]
 }
