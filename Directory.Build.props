@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <!--nullable we disable on a per project basis-->
     <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup>
