@@ -60,7 +60,7 @@ services:
   # Only started by `docker compose --profile telemetry up`, so the default run stays lightweight
   # and continues to demonstrate the no-endpoint, no-SDK path.
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:latest
+    image: otel/opentelemetry-collector-contrib:0.161.0
     profiles: [telemetry]
     command: ["--config=/etc/otel-collector.yaml"]
     volumes:

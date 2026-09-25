@@ -16,7 +16,7 @@
 #
 # Pinned to $BUILDPLATFORM (the native architecture of the machine running the
 # build) and CROSS-COMPILES to $TARGETPLATFORM. The alternative - emulating the
-# target architecture under QEMU - is typically 10-50x slower.
+# target architecture under QEMU - is often an order of magnitude slower.
 # ------------------------------------------------------------------------------
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
@@ -28,10 +28,13 @@ ARG CONFIGURATION=Release
 # Copy ONLY the files that influence `dotnet restore` (--parents preserves the
 # directory structure) so that editing a .cs file reuses the cached restore.
 # Restore is platform-agnostic, so it is performed BEFORE TARGETARCH is
-# introduced and is therefore shared by every target architecture.
+# introduced and is therefore shared by every target architecture. Restoring all
+# three runtime identifiers here lets each platform's publish run offline with
+# --no-restore; a RID-specific publish would otherwise restore again per platform.
 COPY --parents Directory.Build.props Directory.Packages.props src/**/*.csproj ./
 RUN --mount=type=cache,target=/root/.nuget/packages,sharing=locked \
-    dotnet restore "src/$APP_NAME/$APP_NAME.csproj"
+    dotnet restore "src/$APP_NAME/$APP_NAME.csproj" \
+        "-p:RuntimeIdentifiers=\"linux-x64;linux-arm64;linux-arm\""
 
 # -- Compile layer -------------------------------------------------------------
 COPY . .
@@ -43,7 +46,9 @@ COPY . .
 # Concatenating the two gives a single flat token to switch on: amd64|arm64|armv7.
 ARG TARGETARCH
 ARG TARGETVARIANT
-RUN --mount=type=cache,target=/root/.nuget/packages,sharing=locked <<EOF
+# The publish only reads packages the restore above already wrote, so the three
+# platform legs can share the cache concurrently, and --network=none proves it.
+RUN --network=none --mount=type=cache,target=/root/.nuget/packages,sharing=shared <<EOF
 set -eux
 # Map the Docker platform onto a .NET Runtime Identifier (RID).
 # https://learn.microsoft.com/dotnet/core/rid-catalog
@@ -57,6 +62,7 @@ dotnet publish "src/$APP_NAME/$APP_NAME.csproj" \
     --configuration "$CONFIGURATION" \
     --runtime "$RID" \
     --self-contained false \
+    --no-restore \
     --output /out
 EOF
 
@@ -69,7 +75,7 @@ EOF
 # Alternatives, smallest to largest:
 #   mcr.microsoft.com/dotnet/runtime:10.0-noble-chiseled  distroless-style, non-root, no shell
 #   mcr.microsoft.com/dotnet/runtime:10.0-alpine          musl, has a shell, no tzdata by default
-#   mcr.microsoft.com/dotnet/runtime:10.0                 full Debian, largest, easiest to debug
+#   mcr.microsoft.com/dotnet/runtime:10.0                 full Ubuntu, largest, easiest to debug
 # Swap `runtime` for `aspnet` if the application needs the ASP.NET Core shared framework.
 # ------------------------------------------------------------------------------
 FROM mcr.microsoft.com/dotnet/runtime:10.0-noble-chiseled AS final
