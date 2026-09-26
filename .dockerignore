@@ -9,3 +9,8 @@
 !src/**/*.csproj
 !src/**/*.cs
 !src/**/appsettings*.json
+
+# Re-excluded beneath the allow-list above, so local build output never reaches the context.
+# The trailing /** matters: a bare **/obj would still send the matched files as empty stubs.
+**/bin/**
+**/obj/**

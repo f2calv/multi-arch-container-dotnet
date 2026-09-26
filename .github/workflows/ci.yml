@@ -34,6 +34,7 @@ jobs:
     needs: versioning
     with:
       version: ${{ needs.versioning.outputs.version }}
+      execute-tests: false
 
   image:
     uses: f2calv/gha-workflows/.github/workflows/container-image-build.yml@v1
