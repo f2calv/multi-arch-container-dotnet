@@ -264,6 +264,7 @@ without editing NuGet configuration or disabling certificate validation.
 The root build shims remain unchanged in this pilot; their native-builder forwarding and the
 four-language Compose build are not covered by the hosted CI checks. Do not assume the old
 three-platform local path is compatible with this Dockerfile.
+
 ## Build & Test Commands
 
 A [devcontainer](.devcontainer/devcontainer.json) is provided so the repository can be built without installing the .NET SDK on the host; installing the SDK natively (Visual Studio 2026 / `dotnet` CLI) works equally well.
