@@ -22,8 +22,8 @@ var builder = Host.CreateApplicationBuilder(args);
 //   BuildInfo binds the flat, unprefixed provenance variables baked into the image (GIT_TAG etc).
 builder.Services.AddOptions<AppConfig>()
     .Bind(builder.Configuration.GetSection(AppConfig.SectionKey))
-    .ValidateDataAnnotations()
     .ValidateOnStart();
+builder.Services.AddSingleton<IValidateOptions<AppConfig>, AppConfigValidator>();
 
 builder.Services.AddOptions<BuildInfo>()
     .Bind(builder.Configuration);
@@ -33,10 +33,14 @@ builder.Services.AddOptions<BuildInfo>()
 //   Minimum levels and overrides are read from the "Serilog" section of appsettings.json.
 var logFormat = builder.Configuration.GetValue(AppConfig.LogFormatKey, LogFormat.Text);
 
+builder.Services.AddOptions<LoggingLevelConfig>()
+    .Bind(builder.Configuration.GetSection(LoggingLevelConfig.ConfigurationSectionName));
+builder.Services.AddSingleton<SerilogLevelService>();
+
 builder.Services.AddSerilog((services, loggerConfig) =>
 {
+    services.GetRequiredService<SerilogLevelService>().Configure(loggerConfig);
     loggerConfig
-        .ReadFrom.Configuration(builder.Configuration)
         .ReadFrom.Services(services)
         .Enrich.FromLogContext()
         .Enrich.WithMachineName();

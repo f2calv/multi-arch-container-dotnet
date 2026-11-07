@@ -12,31 +12,31 @@ public sealed record BuildInfo
 {
     /// <summary>Git repository name, e.g. <c>f2calv/multi-arch-container-dotnet</c>.</summary>
     [ConfigurationKeyName("GIT_REPOSITORY")]
-    public string GitRepository { get; init; } = Unknown;
+    public string GitRepository { get; set; } = Unknown;
 
     /// <summary>Git branch reference, e.g. <c>refs/heads/main</c>.</summary>
     [ConfigurationKeyName("GIT_BRANCH")]
-    public string GitBranch { get; init; } = Unknown;
+    public string GitBranch { get; set; } = Unknown;
 
     /// <summary>Git commit SHA.</summary>
     [ConfigurationKeyName("GIT_COMMIT")]
-    public string GitCommit { get; init; } = Unknown;
+    public string GitCommit { get; set; } = Unknown;
 
     /// <summary>Git tag, i.e. the semantic version of the image.</summary>
     [ConfigurationKeyName("GIT_TAG")]
-    public string GitTag { get; init; } = Unknown;
+    public string GitTag { get; set; } = Unknown;
 
     /// <summary>GitHub Actions workflow name.</summary>
     [ConfigurationKeyName("GITHUB_WORKFLOW")]
-    public string GitHubWorkflow { get; init; } = Unknown;
+    public string GitHubWorkflow { get; set; } = Unknown;
 
     /// <summary>GitHub Actions run identifier.</summary>
     [ConfigurationKeyName("GITHUB_RUN_ID")]
-    public string GitHubRunId { get; init; } = Unknown;
+    public string GitHubRunId { get; set; } = Unknown;
 
     /// <summary>GitHub Actions run number.</summary>
     [ConfigurationKeyName("GITHUB_RUN_NUMBER")]
-    public string GitHubRunNumber { get; init; } = Unknown;
+    public string GitHubRunNumber { get; set; } = Unknown;
 
     /// <summary>Placeholder used when a provenance variable is absent, i.e. outside a container.</summary>
     public const string Unknown = "n/a";
