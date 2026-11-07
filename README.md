@@ -1,6 +1,11 @@
 # Multi-Architecture Container Image w/.NET
 
-Building a **.NET** application container image that targets `linux/amd64`, `linux/arm64` and `linux/arm/v7` - all from a **single** [Dockerfile](Dockerfile).
+Building a .NET Native AOT application container image for `linux/amd64` and `linux/arm64`
+from a single [Dockerfile](Dockerfile). Parallel native builds are combined into one image index.
+
+CI uses released shared workflows. Pull-request and feature-branch validation do not publish
+images or releases. ARMv7 is not supported by this
+Dockerfile, while the other language examples retain their own platform strategies.
 
 If you find this repository useful then give it a :star: ... :wink:
 
@@ -16,9 +21,9 @@ Although I could achieve my goal of deploying the same application to multiple a
 
 The same trivial worker application is implemented four times, once per language. The repository layout, file names, CI workflow and even the Dockerfile comments are kept as close to identical as possible - so a developer fluent in one language can learn another language's containerisation story simply by diffing two repositories.
 
-| Repository | Language | Build image | Final image | Cross-compilation mechanism |
+| Repository | Language | Build image | Final image | Build strategy |
 | --- | --- | --- | --- | --- |
-| [multi-arch-container-dotnet](https://github.com/f2calv/multi-arch-container-dotnet) | C# / .NET 10 | `mcr.microsoft.com/dotnet/sdk:10.0` | `mcr.microsoft.com/dotnet/runtime:10.0-noble-chiseled` | `dotnet publish -r <RID>` |
+| [multi-arch-container-dotnet](https://github.com/f2calv/multi-arch-container-dotnet) | C# / .NET 10 | `mcr.microsoft.com/dotnet/sdk:10.0-noble-aot` | `mcr.microsoft.com/dotnet/runtime-deps:10.0-noble-chiseled-extra` | Target-native AOT publish and image-index assembly |
 | [multi-arch-container-go](https://github.com/f2calv/multi-arch-container-go) | Go | `golang:1-trixie` | `gcr.io/distroless/static-debian13:nonroot` | `GOOS` / `GOARCH` / `GOARM` |
 | [multi-arch-container-rust](https://github.com/f2calv/multi-arch-container-rust) | Rust | `rust:1-trixie` | `gcr.io/distroless/cc-debian13:nonroot` | `rustup target` + GNU cross linker |
 | [multi-arch-container-python](https://github.com/f2calv/multi-arch-container-python) | Python 3.14 | `python:3.14-slim-trixie` | `python:3.14-slim-trixie` | Architecture-neutral wheel + target-native runtime |
@@ -43,10 +48,13 @@ These repositories are **application code only** - Kubernetes packaging lives in
   - `Program.cs` - entry point; configuration, logging and DI wiring only.
   - `Models/_AppConfig.cs` - application configuration bound from the `app` section.
   - `Models/_BuildInfo.cs` - build provenance bound from the flat `GIT_*`/`GITHUB_*` variables.
+  - `Models/AppConfigValidator.cs` - generated configuration validation.
+  - `Models/LoggingLevelConfig.cs` - source-bindable logging thresholds.
   - `Models/_Enums.cs` - all enums for the project.
+  - `Services/SerilogLevelService.cs` - reloadable logging switches without assembly discovery.
   - `Services/WorkerService.cs` - the `BackgroundService` worker loop.
   - `appsettings.json` - base configuration.
-- `Dockerfile` - two-stage, cross-compiling, multi-architecture build.
+- `Dockerfile` - two-stage, target-native AOT build with no managed runtime in the final image.
 - `.github/workflows/ci.yml` - CI/CD using reusable workflows from [f2calv/gha-workflows](https://github.com/f2calv/gha-workflows).
 - `build.sh` / `build.ps1` - local build scripts for manual testing.
 - `Directory.Build.props` / `Directory.Packages.props` - central MSBuild properties and NuGet versions.
@@ -69,7 +77,15 @@ RID is short for [Runtime Identifier](https://learn.microsoft.com/dotnet/core/ri
 | --- | --- | --- | --- | --- |
 | `linux/amd64` | `amd64` | *(empty)* | `linux-x64` | Most desktop/server distributions |
 | `linux/arm64` | `arm64` | *(empty)* | `linux-arm64` | Raspberry Pi 3+ on 64-bit Ubuntu/Debian, Apple Silicon, AWS Graviton |
-| `linux/arm/v7` | `arm` | `v7` | `linux-arm` | Raspberry Pi 2+ on 32-bit Raspberry Pi OS |
+
+The Dockerfile rejects a mismatch between `BUILDPLATFORM` and `TARGETPLATFORM`. Its CI caller
+maps amd64 and arm64 to separate hosted native runners. Native AOT can also cross-compile with
+an appropriate target toolchain; this pilot deliberately chooses native compilation instead.
+
+Raspberry Pi 4 requires a 64-bit Linux OS and Docker to select the `linux/arm64` image.
+The build uses the default Linux ARM64 CPU baseline, without targeting the builder's CPU or
+requiring newer optional instructions such as LSE. Physical Pi 4 execution has not been tested;
+hosted ARM64 smoke tests do not prove compatibility with a reduced-instruction-set CPU.
 
 ## Anatomy of the Dockerfile
 
@@ -77,14 +93,14 @@ All four sibling repositories share the same two-stage shape:
 
 ```mermaid
 flowchart LR
-    subgraph build["Stage 1: build - runs on $BUILDPLATFORM"]
+    subgraph build["Stage 1: build - native $TARGETPLATFORM"]
         direction TB
         A["toolchain / SDK base image"] --> B["dependency layer<br/>(restore / fetch / download)"]
-        B --> C["compile for $TARGETPLATFORM"]
+        B --> C["native AOT publish for $TARGETPLATFORM"]
     end
     subgraph final["Stage 2: final - image for $TARGETPLATFORM"]
         direction TB
-        D["minimal base image"] --> E["copy compiled artefact"]
+        D["runtime dependencies only"] --> E["copy native executable"]
         E --> F["provenance ARG/ENV<br/>+ OCI labels"]
         F --> G["USER non-root"]
     end
@@ -93,11 +109,22 @@ flowchart LR
 
 The five ideas worth stealing:
 
-1. **Cross-compile, don't emulate.** The build stage is pinned with `FROM --platform=$BUILDPLATFORM`, so it always runs natively on the builder and produces output for the target. Letting buildx run the whole build under QEMU emulation instead is often an order of magnitude slower.
-2. **Split dependency resolution from compilation.** `dotnet restore` runs against a layer containing only `*.csproj` and `Directory.*.props`, so editing a `.cs` file reuses the cached restore. Restore is platform-agnostic and deliberately happens *before* `TARGETARCH` is introduced, so all three architectures share it.
-3. **Switch on `TARGETARCH` + `TARGETVARIANT`, not `TARGETPLATFORM`.** Concatenating the two produces a single flat token (`amd64`, `arm64`, `armv7`) that a `case` statement handles in three lines, instead of comparing full `linux/arm/v7`-style strings.
-4. **Use BuildKit cache mounts.** `--mount=type=cache` keeps the NuGet package cache outside the image layers - it survives across builds without bloating the result.
-5. **Ship a minimal, non-root final image.** The chiseled base has no shell and no package manager, and the container runs as `$APP_UID` (1654).
+1. Compile on matching native builders. The build platform guard fails instead of silently
+  emulating an unsupported cross-architecture build.
+2. Split dependency resolution from compilation. Project files, central properties and
+  `global.json` form the restore layer; each target restores its own RID and AOT settings.
+3. Publish offline with the same TFM, RID and feature switches used for restore.
+4. Use BuildKit cache mounts without assuming they persist on newly provisioned runners.
+  CI also uses separate per-platform layer cache scopes.
+5. Ship runtime dependencies without the managed runtime. The non-root chiseled-extra image
+  retains normal globalization and time-zone support.
+
+The [CI caller](.github/workflows/ci.yml) smoke-runs both architectures with read-only filesystems,
+no networking and JSON logs. It checks environment overrides, process architecture, version
+provenance and graceful shutdown. The shared workflow then transfers platform archives and
+verifies a combined OCI index in a disposable registry when publication is disabled.
+See the [shared container architecture guide](https://github.com/f2calv/gha-workflows/blob/v1.10.0/docs/architecture-container-images.md)
+for the build and artifact hand-offs in the released shared workflow.
 
 ## Logging
 
@@ -228,27 +255,20 @@ helm uninstall multi-arch-container-dotnet
 
 The .NET workload is an ultra simple worker process (i.e. a console application) which loops outputting a number of environment variables passed in during the CI process and then baked into the container image.
 
-Clone the repository and then, via a terminal window from the root of the repository, execute;
-
-```powershell
-#demo script PowerShell version
-./build.ps1
-```
-
-Or
+Select a Buildx builder native to the requested target. For a local amd64 smoke image:
 
 ```bash
-#demo script Shell version
-./build.sh
+docker buildx build --platform linux/amd64 --load --tag worker:aot-local .
 ```
 
-Both scripts are byte-identical across the four sibling repositories - every value they need is derived from git rather than hard-coded. They emulate the `image` job of [ci.yml](.github/workflows/ci.yml).
+Use `linux/arm64` on a native ARM64 builder. A configured multi-node native builder can export
+both targets with `--platform linux/amd64,linux/arm64 --output type=oci,dest=worker.tar`.
+An alternate restore feed can be supplied through the optional BuildKit secret `nuget_source`,
+without editing NuGet configuration or disabling certificate validation.
 
-A multi-platform image cannot be loaded into the local Docker image store, so by default the scripts build a single platform (`linux/amd64`) with `--load`. To exercise all three architectures locally, export an OCI archive instead:
-
-```bash
-PLATFORM=linux/amd64,linux/arm64,linux/arm/v7 OUTPUT=--output=type=oci,dest=multi-arch-container.tar ./build.sh
-```
+The root build shims remain unchanged in this pilot; their native-builder forwarding and the
+four-language Compose build are not covered by the hosted CI checks. Do not assume the old
+three-platform local path is compatible with this Dockerfile.
 
 ## Build & Test Commands
 

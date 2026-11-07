@@ -22,17 +22,17 @@ public sealed record AppConfig
     /// <summary>Message written on every iteration of the worker loop.</summary>
     /// <remarks>Defaults to a generic greeting.</remarks>
     [ConfigurationKeyName("greeting")]
-    [Required, MinLength(1)]
-    public string Greeting { get; init; } = "Hello from a multi-architecture container";
+    [Required]
+    public string Greeting { get; set; } = "Hello from a multi-architecture container";
 
     /// <summary>Delay between worker loop iterations, in seconds.</summary>
     /// <remarks>Defaults to 3 seconds.</remarks>
     [ConfigurationKeyName("interval_seconds")]
     [Range(1, 3600)]
-    public int IntervalSeconds { get; init; } = 3;
+    public int IntervalSeconds { get; set; } = 3;
 
     /// <inheritdoc cref="Models.LogFormat"/>
     /// <remarks>Defaults to <see cref="Models.LogFormat.Text"/>.</remarks>
     [ConfigurationKeyName("log_format")]
-    public LogFormat LogFormat { get; init; } = LogFormat.Text;
+    public LogFormat LogFormat { get; set; } = LogFormat.Text;
 }

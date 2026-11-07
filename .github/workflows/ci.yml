@@ -45,8 +45,35 @@ jobs:
     with:
       registry: ghcr.io/${{ github.repository_owner }}
       tag: ${{ needs.versioning.outputs.version }}
-      platform: linux/amd64,linux/arm64,linux/arm/v7
-      push-image: ${{ github.ref_name == github.event.repository.default_branch }}
+      platform: linux/amd64,linux/arm64
+      platform-runners: >-
+        [{"platform":"linux/amd64","runner":"ubuntu-26.04"},
+        {"platform":"linux/arm64","runner":"ubuntu-26.04-arm"}]
+      artifact-name: worker-native-image
+      buildkit-cache: true
+      push-image: ${{ github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+      smoke-test: |
+        case "$(docker image inspect "$IMAGE" --format '{{.Architecture}}')" in
+          amd64) PROCESS_ARCH=X64 ;;
+          arm64) PROCESS_ARCH=Arm64 ;;
+          *) exit 1 ;;
+        esac
+        EXPECTED=$(docker image inspect "$IMAGE" --format '{{index .Config.Labels "org.opencontainers.image.version"}}')
+        CONTAINER="worker-smoke-$GITHUB_RUN_ID-${PROCESS_ARCH,,}"
+        trap 'docker rm -f "$CONTAINER" > /dev/null' EXIT
+        docker run --detach --name "$CONTAINER" --read-only --network none \
+          --env APP__LOG_FORMAT=json --env APP__GREETING=aot-ci-smoke \
+          --env APP__INTERVAL_SECONDS=1 "$IMAGE"
+        timeout 30s bash -c 'docker logs --follow "$1" 2>&1 | grep -m1 "\"GitTag\""' _ "$CONTAINER"
+        docker stop --timeout 20 "$CONTAINER"
+        test "$(docker inspect "$CONTAINER" --format '{{.State.ExitCode}}')" = 0
+        docker logs "$CONTAINER" > "$RUNNER_TEMP/worker-smoke.jsonl"
+        jq -se --arg architecture "$PROCESS_ARCH" --arg tag "$EXPECTED" '
+          any(.[]; .Properties.Greeting == "aot-ci-smoke" and .Properties.IntervalSeconds == 1) and
+          any(.[]; .Properties.ProcessArchitecture == $architecture) and
+          any(.[]; .Properties.GitTag == $tag) and
+          any(.[]; .MessageTemplate == "{ClassName} stopping")
+        ' "$RUNNER_TEMP/worker-smoke.jsonl" > /dev/null
 
   release:
     needs: [lint, versioning, app, image]
@@ -55,6 +82,6 @@ jobs:
     permissions:
       contents: write
     with:
-      semVer: ${{ needs.versioning.outputs.version }}
+      semVer: ${{ format('{0}.{1}.{2}', needs.versioning.outputs.major, needs.versioning.outputs.minor, needs.versioning.outputs.patch) }}
       tag-prefix: ''
       move-major-tag: false
