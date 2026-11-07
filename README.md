@@ -3,8 +3,8 @@
 Building a .NET Native AOT application container image for `linux/amd64` and `linux/arm64`
 from a single [Dockerfile](Dockerfile). Parallel native builds are combined into one image index.
 
-This checkout is an AOT pilot. Its CI temporarily calls the shared workflow's feature branch;
-feature-branch validation does not publish images or releases. ARMv7 is not supported by this
+CI uses released shared workflows. Pull-request and feature-branch validation do not publish
+images or releases. ARMv7 is not supported by this
 Dockerfile, while the other language examples retain their own platform strategies.
 
 If you find this repository useful then give it a :star: ... :wink:
@@ -82,6 +82,11 @@ The Dockerfile rejects a mismatch between `BUILDPLATFORM` and `TARGETPLATFORM`. 
 maps amd64 and arm64 to separate hosted native runners. Native AOT can also cross-compile with
 an appropriate target toolchain; this pilot deliberately chooses native compilation instead.
 
+Raspberry Pi 4 requires a 64-bit Linux OS and Docker to select the `linux/arm64` image.
+The build uses the default Linux ARM64 CPU baseline, without targeting the builder's CPU or
+requiring newer optional instructions such as LSE. Physical Pi 4 execution has not been tested;
+hosted ARM64 smoke tests do not prove compatibility with a reduced-instruction-set CPU.
+
 ## Anatomy of the Dockerfile
 
 All four sibling repositories share the same two-stage shape:
@@ -118,8 +123,8 @@ The [CI caller](.github/workflows/ci.yml) smoke-runs both architectures with rea
 no networking and JSON logs. It checks environment overrides, process architecture, version
 provenance and graceful shutdown. The shared workflow then transfers platform archives and
 verifies a combined OCI index in a disposable registry when publication is disabled.
-See the [shared container architecture guide](https://github.com/f2calv/gha-workflows/blob/f2calv/2026-11-updates2/docs/architecture-container-images.md)
-for the build and artifact hand-offs; this guide requires the unreleased feature-branch implementation.
+See the [shared container architecture guide](https://github.com/f2calv/gha-workflows/blob/v1.10.0/docs/architecture-container-images.md)
+for the build and artifact hand-offs in the released shared workflow.
 
 ## Logging
 
