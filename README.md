@@ -7,7 +7,7 @@ CI uses released shared workflows. Pull-request and feature-branch validation do
 images or releases. ARMv7 is not supported by this
 Dockerfile, while the other language examples retain their own platform strategies.
 
-This source branch targets .NET 11 RC3 and C# 15. Use the SDK selected in
+This source branch targets .NET 11 and C# 15. Use the SDK selected in
 [global.json](global.json); the .NET 11 upgrade remains unreleased until GA.
 
 If you find this repository useful then give it a :star: ... :wink:
@@ -26,7 +26,7 @@ The same trivial worker application is implemented four times, once per language
 
 | Repository | Language | Build image | Final image | Build strategy |
 | --- | --- | --- | --- | --- |
-| [multi-arch-container-dotnet](https://github.com/f2calv/multi-arch-container-dotnet) | C# / .NET 11 RC3 | `mcr.microsoft.com/dotnet/sdk:11.0.100-rc.3-resolute-aot` | `mcr.microsoft.com/dotnet/runtime-deps:11.0.0-rc.3-resolute-chiseled-extra` | Target-native AOT publish and image-index assembly |
+| [multi-arch-container-dotnet](https://github.com/f2calv/multi-arch-container-dotnet) | C# / .NET 11 | `mcr.microsoft.com/dotnet/sdk:11.0.100-rc.3-resolute-aot` | `mcr.microsoft.com/dotnet/runtime-deps:11.0.0-rc.3-resolute-chiseled-extra` | Target-native AOT publish and image-index assembly |
 | [multi-arch-container-go](https://github.com/f2calv/multi-arch-container-go) | Go | `golang:1-trixie` | `gcr.io/distroless/static-debian13:nonroot` | `GOOS` / `GOARCH` / `GOARM` |
 | [multi-arch-container-rust](https://github.com/f2calv/multi-arch-container-rust) | Rust | `rust:1-trixie` | `gcr.io/distroless/cc-debian13:nonroot` | `rustup target` + GNU cross linker |
 | [multi-arch-container-python](https://github.com/f2calv/multi-arch-container-python) | Python 3.14 | `python:3.14-slim-trixie` | `python:3.14-slim-trixie` | Architecture-neutral wheel + target-native runtime |
@@ -64,7 +64,7 @@ These repositories are **application code only** - Kubernetes packaging lives in
 
 ## Technology Stack
 
-- **Language**: C# 15 / .NET 11 RC3
+- **Language**: C# 15 / .NET 11
 - **Hosting**: `Microsoft.Extensions.Hosting` generic host, `BackgroundService` worker
 - **Logging**: Serilog owns the `Microsoft.Extensions.Logging` pipeline; application code depends only on `ILogger<T>`
 - **Configuration**: `Microsoft.Extensions.Configuration` (`appsettings.json`, then environment variables), bound to validated `IOptions<T>` records
