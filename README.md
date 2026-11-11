@@ -26,7 +26,7 @@ The same trivial worker application is implemented four times, once per language
 
 | Repository | Language | Build image | Final image | Build strategy |
 | --- | --- | --- | --- | --- |
-| [multi-arch-container-dotnet](https://github.com/f2calv/multi-arch-container-dotnet) | C# / .NET 11 | `mcr.microsoft.com/dotnet/sdk:11.0.100-rc.3-resolute-aot` | `mcr.microsoft.com/dotnet/runtime-deps:11.0.0-rc.3-resolute-chiseled-extra` | Target-native AOT publish and image-index assembly |
+| [multi-arch-container-dotnet](https://github.com/f2calv/multi-arch-container-dotnet) | C# / .NET 11 | `mcr.microsoft.com/dotnet/sdk:11.0-resolute-aot` | `mcr.microsoft.com/dotnet/runtime-deps:11.0-resolute-chiseled-extra` | Target-native AOT publish and image-index assembly |
 | [multi-arch-container-go](https://github.com/f2calv/multi-arch-container-go) | Go | `golang:1-trixie` | `gcr.io/distroless/static-debian13:nonroot` | `GOOS` / `GOARCH` / `GOARM` |
 | [multi-arch-container-rust](https://github.com/f2calv/multi-arch-container-rust) | Rust | `rust:1-trixie` | `gcr.io/distroless/cc-debian13:nonroot` | `rustup target` + GNU cross linker |
 | [multi-arch-container-python](https://github.com/f2calv/multi-arch-container-python) | Python 3.14 | `python:3.14-slim-trixie` | `python:3.14-slim-trixie` | Architecture-neutral wheel + target-native runtime |

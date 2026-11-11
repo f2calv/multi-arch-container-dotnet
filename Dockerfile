@@ -20,7 +20,7 @@
 # Target-native SDK and compiler toolchain; RID selection alone cannot supply
 # the native linker/sysroot needed for cross-architecture Native AOT.
 # ------------------------------------------------------------------------------
-FROM mcr.microsoft.com/dotnet/sdk:11.0.100-rc.3-resolute-aot AS build
+FROM mcr.microsoft.com/dotnet/sdk:11.0-resolute-aot AS build
 WORKDIR /src
 
 ARG APP_NAME=multi-arch-container-dotnet
@@ -89,7 +89,7 @@ EOF
 # No managed runtime is required. The extra variant preserves normal culture
 # and time-zone behavior rather than silently enabling invariant globalization.
 # ------------------------------------------------------------------------------
-FROM mcr.microsoft.com/dotnet/runtime-deps:11.0.0-rc.3-resolute-chiseled-extra AS final
+FROM mcr.microsoft.com/dotnet/runtime-deps:11.0-resolute-chiseled-extra AS final
 WORKDIR /app
 COPY --link --from=build /out .
 
