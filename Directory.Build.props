@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <RootNamespace>CasCap</RootNamespace>
-    <LangVersion>14.0</LangVersion>
+    <LangVersion>15.0</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <!--nullable we disable on a per project basis-->
     <Nullable>enable</Nullable>
@@ -17,6 +17,15 @@
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true' OR '$(TF_BUILD)' == 'true'">
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="GitRepository" Value="$(GitRepository)" />
+    <AssemblyMetadata Include="GitBranch" Value="$(GitBranch)" />
+    <AssemblyMetadata Include="GitCommit" Value="$(SourceRevisionId)" />
+    <AssemblyMetadata Include="BuildWorkflow" Value="$(BuildWorkflow)" />
+    <AssemblyMetadata Include="BuildRunId" Value="$(BuildRunId)" />
+    <AssemblyMetadata Include="BuildRunNumber" Value="$(BuildRunNumber)" />
+  </ItemGroup>
 
   <PropertyGroup>
     <!-- CS0162 - Unreachable code detected. -->

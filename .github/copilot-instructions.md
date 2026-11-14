@@ -47,4 +47,4 @@ Configuration keys are **snake_case**, not PascalCase, and are mapped onto idiom
 
 ## Container Conventions
 
-- The final image is `mcr.microsoft.com/dotnet/runtime:10.0-noble-chiseled` and runs as `$APP_UID`. Do not reintroduce a dependency that drags in the ASP.NET Core shared framework (e.g. `Serilog.AspNetCore`) without also switching the base image back to `dotnet/aspnet`.
+- The Native AOT final image is `mcr.microsoft.com/dotnet/runtime-deps:11.0-resolute-chiseled-extra` and runs as `$APP_UID`. Keep its culture and time-zone support and do not introduce a dependency on the ASP.NET Core shared framework, such as `Serilog.AspNetCore`.

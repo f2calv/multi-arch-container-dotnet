@@ -7,6 +7,9 @@ CI uses released shared workflows. Pull-request and feature-branch validation do
 images or releases. ARMv7 is not supported by this
 Dockerfile, while the other language examples retain their own platform strategies.
 
+This source targets .NET 11 and C# 15. Build with a stable .NET 11 SDK;
+[global.json](global.json) disables prerelease SDK selection without pinning a version.
+
 If you find this repository useful then give it a :star: ... :wink:
 
 ## Introduction
@@ -23,7 +26,7 @@ The same trivial worker application is implemented four times, once per language
 
 | Repository | Language | Build image | Final image | Build strategy |
 | --- | --- | --- | --- | --- |
-| [multi-arch-container-dotnet](https://github.com/f2calv/multi-arch-container-dotnet) | C# / .NET 10 | `mcr.microsoft.com/dotnet/sdk:10.0-noble-aot` | `mcr.microsoft.com/dotnet/runtime-deps:10.0-noble-chiseled-extra` | Target-native AOT publish and image-index assembly |
+| [multi-arch-container-dotnet](https://github.com/f2calv/multi-arch-container-dotnet) | C# / .NET 11 | `mcr.microsoft.com/dotnet/sdk:11.0-resolute-aot` | `mcr.microsoft.com/dotnet/runtime-deps:11.0-resolute-chiseled-extra` | Target-native AOT publish and image-index assembly |
 | [multi-arch-container-go](https://github.com/f2calv/multi-arch-container-go) | Go | `golang:1-trixie` | `gcr.io/distroless/static-debian13:nonroot` | `GOOS` / `GOARCH` / `GOARM` |
 | [multi-arch-container-rust](https://github.com/f2calv/multi-arch-container-rust) | Rust | `rust:1-trixie` | `gcr.io/distroless/cc-debian13:nonroot` | `rustup target` + GNU cross linker |
 | [multi-arch-container-python](https://github.com/f2calv/multi-arch-container-python) | Python 3.14 | `python:3.14-slim-trixie` | `python:3.14-slim-trixie` | Architecture-neutral wheel + target-native runtime |
@@ -61,7 +64,7 @@ These repositories are **application code only** - Kubernetes packaging lives in
 
 ## Technology Stack
 
-- **Language**: C# 14 / .NET 10.0
+- **Language**: C# 15 / .NET 11
 - **Hosting**: `Microsoft.Extensions.Hosting` generic host, `BackgroundService` worker
 - **Logging**: Serilog owns the `Microsoft.Extensions.Logging` pipeline; application code depends only on `ILogger<T>`
 - **Configuration**: `Microsoft.Extensions.Configuration` (`appsettings.json`, then environment variables), bound to validated `IOptions<T>` records
@@ -81,6 +84,9 @@ RID is short for [Runtime Identifier](https://learn.microsoft.com/dotnet/core/ri
 The Dockerfile rejects a mismatch between `BUILDPLATFORM` and `TARGETPLATFORM`. Its CI caller
 maps amd64 and arm64 to separate hosted native runners. Native AOT can also cross-compile with
 an appropriate target toolchain; this pilot deliberately chooses native compilation instead.
+
+.NET 11 requires x86-64-v2 on x64; its Linux ARM64 minimum remains armv8.0-a.
+See the [minimum hardware requirements](https://learn.microsoft.com/dotnet/core/whats-new/dotnet-11/runtime#updated-minimum-hardware-requirements).
 
 Raspberry Pi 4 requires a 64-bit Linux OS and Docker to select the `linux/arm64` image.
 The build uses the default Linux ARM64 CPU baseline, without targeting the builder's CPU or
