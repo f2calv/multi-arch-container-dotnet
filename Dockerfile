@@ -8,6 +8,8 @@
 # This file deliberately mirrors its sibling repositories stage-for-stage and
 # comment-for-comment, so that a developer fluent in one language can learn the
 # containerisation story of another by diffing the two files:
+# The canonical AOT publish contract fits two stages; final retains the siblings'
+# provenance ENV contract rather than introducing a separate runtime stage.
 #
 #   https://github.com/f2calv/multi-arch-container-dotnet   <- you are here
 #   https://github.com/f2calv/multi-arch-container-go
@@ -21,12 +23,21 @@
 # the native linker/sysroot needed for cross-architecture Native AOT.
 # ------------------------------------------------------------------------------
 FROM mcr.microsoft.com/dotnet/sdk:11.0-resolute-aot AS build
-WORKDIR /src
+WORKDIR /repo
 
 ARG APP_NAME=multi-arch-container-dotnet
+ARG WORKLOAD=$APP_NAME
+ARG PROJECT=src/$APP_NAME/$APP_NAME.csproj
 ARG CONFIGURATION=Release
+ARG TARGET_FRAMEWORK=net11.0
+ARG INVARIANT_GLOBALIZATION=false
 ARG VERSION=0.0.0-local
+ARG GIT_REPOSITORY=n/a
+ARG GIT_BRANCH=n/a
 ARG GIT_COMMIT=n/a
+ARG GITHUB_WORKFLOW=n/a
+ARG GITHUB_RUN_ID=0
+ARG GITHUB_RUN_NUMBER=0
 
 # -- Dependency layer ----------------------------------------------------------
 # Copy ONLY the files that influence `dotnet restore` (--parents preserves the
@@ -49,15 +60,15 @@ set --
 if [ -f /run/secrets/nuget_source ]; then
     set -- --source "$(cat /run/secrets/nuget_source)"
 fi
-dotnet restore "src/$APP_NAME/$APP_NAME.csproj" \
+dotnet restore "$PROJECT" \
     "$@" \
     --runtime "$RID" \
     -p:Configuration="$CONFIGURATION" \
-    -p:TargetFramework=net11.0 \
-    -p:PublishAot=true \
+    -p:TargetFramework="$TARGET_FRAMEWORK" \
     -p:SelfContained=true \
-    -p:InvariantGlobalization=false
-printf '%s' "$RID" > /src/target-rid
+    -p:PublishAot=true \
+    -p:InvariantGlobalization="$INVARIANT_GLOBALIZATION"
+printf '%s' "$RID" > /repo/target-rid
 EOF
 
 # -- Compile layer -------------------------------------------------------------
@@ -66,18 +77,24 @@ COPY . .
 # Native publishing reads only the packages restored for this platform.
 RUN --network=none --mount=type=cache,target=/root/.nuget/packages,sharing=shared <<EOF
 set -eux
-RID="$(cat /src/target-rid)"
-dotnet publish "src/$APP_NAME/$APP_NAME.csproj" \
+RID="$(cat /repo/target-rid)"
+dotnet publish "$PROJECT" \
     --configuration "$CONFIGURATION" \
-    --framework net11.0 \
+    --framework "$TARGET_FRAMEWORK" \
+    --output /app/publish \
     --runtime "$RID" \
     --self-contained true \
     --no-restore \
     -p:PublishAot=true \
-    -p:InvariantGlobalization=false \
+    -p:InvariantGlobalization="$INVARIANT_GLOBALIZATION" \
     -p:Version="$VERSION" \
     -p:SourceRevisionId="$GIT_COMMIT" \
-    --output /out
+    -p:GitRepository="$GIT_REPOSITORY" \
+    -p:GitBranch="$GIT_BRANCH" \
+    -p:BuildWorkflow="$GITHUB_WORKFLOW" \
+    -p:BuildRunId="$GITHUB_RUN_ID" \
+    -p:BuildRunNumber="$GITHUB_RUN_NUMBER"
+ln -s "$WORKLOAD" /app/publish/entrypoint
 EOF
 
 # ------------------------------------------------------------------------------
@@ -91,10 +108,13 @@ EOF
 # ------------------------------------------------------------------------------
 FROM mcr.microsoft.com/dotnet/runtime-deps:11.0-resolute-chiseled-extra AS final
 WORKDIR /app
-COPY --link --from=build /out .
+COPY --link --from=build /app/publish .
 
 # -- Provenance ----------------------------------------------------------------
 # Supplied by the CI workflow (.github/workflows/ci.yml) or by build.sh/build.ps1.
+ARG APP_NAME=multi-arch-container-dotnet
+ARG WORKLOAD=$APP_NAME
+ARG VERSION=0.0.0-local
 ARG GIT_REPOSITORY=n/a
 ENV GIT_REPOSITORY=$GIT_REPOSITORY
 ARG GIT_BRANCH=n/a
@@ -112,11 +132,11 @@ ARG GITHUB_RUN_NUMBER=0
 ENV GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER
 
 # https://github.com/opencontainers/image-spec/blob/main/annotations.md
-LABEL org.opencontainers.image.title="multi-arch-container-dotnet" \
+LABEL org.opencontainers.image.title="$WORKLOAD" \
     org.opencontainers.image.description="Multi-architecture Native AOT container build (amd64/arm64) w/.NET" \
     org.opencontainers.image.source="https://github.com/f2calv/multi-arch-container-dotnet" \
     org.opencontainers.image.licenses="MIT" \
-    org.opencontainers.image.version="$GIT_TAG" \
+    org.opencontainers.image.version="$VERSION" \
     org.opencontainers.image.revision="$GIT_COMMIT"
 
 # $APP_UID is defined by the .NET base images (1654). Chiseled images already run
@@ -124,4 +144,4 @@ LABEL org.opencontainers.image.title="multi-arch-container-dotnet" \
 # sibling repositories consistent.
 USER $APP_UID
 
-ENTRYPOINT ["/app/multi-arch-container-dotnet"]
+ENTRYPOINT ["/app/entrypoint"]

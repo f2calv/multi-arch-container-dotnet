@@ -18,6 +18,15 @@
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
+  <ItemGroup>
+    <AssemblyMetadata Include="GitRepository" Value="$(GitRepository)" />
+    <AssemblyMetadata Include="GitBranch" Value="$(GitBranch)" />
+    <AssemblyMetadata Include="GitCommit" Value="$(SourceRevisionId)" />
+    <AssemblyMetadata Include="BuildWorkflow" Value="$(BuildWorkflow)" />
+    <AssemblyMetadata Include="BuildRunId" Value="$(BuildRunId)" />
+    <AssemblyMetadata Include="BuildRunNumber" Value="$(BuildRunNumber)" />
+  </ItemGroup>
+
   <PropertyGroup>
     <!-- CS0162 - Unreachable code detected. -->
     <!-- S125 - Remove this commented out code. -->
