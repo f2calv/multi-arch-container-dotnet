@@ -7,8 +7,8 @@ CI uses released shared workflows. Pull-request and feature-branch validation do
 images or releases. ARMv7 is not supported by this
 Dockerfile, while the other language examples retain their own platform strategies.
 
-This source branch targets .NET 11 and C# 15. Use the SDK selected in
-[global.json](global.json); the .NET 11 upgrade remains unreleased until GA.
+This source targets .NET 11 and C# 15. Build with a stable .NET 11 SDK;
+[global.json](global.json) disables prerelease SDK selection without pinning a version.
 
 If you find this repository useful then give it a :star: ... :wink:
 
